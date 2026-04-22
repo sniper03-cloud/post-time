@@ -1,253 +1,190 @@
 # Post Time — AI Handicapper
 
-A PWA for AI-assisted thoroughbred horse racing handicapping. Built iteratively through conversations with Claude in chat. Currently at v6.
+A PWA for AI-assisted thoroughbred horse racing handicapping. Currently at v7.1.
 
 ## What this app does
 
-User picks a date → sees all US thoroughbred tracks racing that day → picks a track → sees race card → picks a race → gets entries auto-populated + live track conditions + PP data from either scanned program photos OR uploaded Brisnet data files → runs a deep-dive AI analysis that researches each horse individually and synthesizes picks using pace-school methodology with trip-bad-luck flagging.
+User picks a date → tracks racing that day → picks a track → race card → picks a race → loads PP data (program photos or Brisnet CSV) and optionally live tote odds (TwinSpires screenshot) → runs deep-dive AI analysis → sees picks, pace breakdown, trip angles, and overlay detection with Kelly-sized bet suggestions.
 
-Target use: user goes to Kentucky Oaks (May 1, 2026) and Derby (May 2) and wants to race his own handicap against the AI's. Broader use: any US thoroughbred race card.
+## v7.1 — nav & persistence
+
+- App remembers where you were across sessions. View, date, track, race all persist.
+- If saved date is in the past, silently snaps to today.
+- Saved analysis displays on reopen with timestamp ("3m ago") and Re-run button. Banner goes amber if >3h old or from a different day.
+- Browser back button walks up the view tree (tracks → home, races → tracks, entries → races, analysis → entries). Closes open modals before navigating.
+- Auto-fetches supporting data (race card, entries) when restoring a deep view on reopen.
+
+Storage keys introduced:
+- `postTime_nav` — last nav state
+- `analysis:{trackSlug}:{date}:race{N}` — saved analysis with timestamp + conditions/entries/horses/raceCard/track/race for full restoration
 
 ## Tech stack
 
-- **Single-file HTML app** — React via CDN (18.3.1), Babel standalone for JSX. No build step.
-- **PWA** — manifest.json + service-worker.js. Installable to home screen.
-- **Storage** — localStorage only. Keys: `postTime_apiKey`, `postTime_model`, `postTime_scanMode`, `pp:{trackSlug}:{date}:race{N}`.
-- **Anthropic API** — direct browser calls with `anthropic-dangerous-direct-browser-access: true`. User-provided key.
-- **Data sources**:
-  - Horse Racing Nation for schedules/entries (URL-based fetching via web_fetch)
-  - Photos or Brisnet files for PP data (user-provided)
-- **Deployment** — zip, drop on Netlify or push to GitHub Pages.
+- Single-file HTML, React CDN + Babel standalone, no build step
+- PWA with manifest + service worker (cache: `post-time-v7-1`)
+- localStorage only
+- Direct browser Anthropic API
+- Data sources: Horse Racing Nation (entries via web_fetch), user-provided photos/Brisnet CSVs/tote screenshots
+
+## Storage keys
+
+- `postTime_apiKey` — user's Anthropic key
+- `postTime_model` — preferred analysis model
+- `postTime_scanMode` — last-used PP input mode
+- `postTime_bankroll` — Kelly sizing bankroll
+- `postTime_nav` — v7.1 nav state
+- `pp:{trackSlug}:{date}:race{N}` — PP data
+- `odds:{trackSlug}:{date}:race{N}` — live tote data (timestamped)
+- `analysis:{trackSlug}:{date}:race{N}` — v7.1 saved analysis
 
 ## File structure
 
 ```
-post-time-v6/
-├── index.html         ← entire app (~82KB, 2000+ lines)
+post-time-v7.1/
+├── index.html         ← ~170KB, ~3000 lines
 ├── manifest.json
-├── service-worker.js  ← cache name: 'post-time-v6'
+├── service-worker.js  ← CACHE_NAME: 'post-time-v7-1'
 ├── icon-192.png
 ├── icon-512.png
-└── CLAUDE.md          ← this file
+└── CLAUDE.md
 ```
-
-**When shipping changes:** bump `CACHE_NAME` in service-worker.js so installed PWAs refresh.
 
 ## Architecture — 5 views
 
-State machine via `view` state: `home | tracks | races | entries | analysis`
+`home | tracks | races | entries | analysis`
 
-1. **home** — date picker + API key input if missing
-2. **tracks** — list of tracks racing that date (fetched from HRN)
-3. **races** — full race card, each race has Load button (opens scan modal)
-4. **entries** — editable field, conditions, model picker, PP badges
-5. **analysis** — pace breakdown, trip angles, picks, exotics, horse-by-horse
+## v7 two-section scan modal (unchanged in v7.1)
 
-## v6 NEW: Dual PP Data Input (Photo OR Brisnet file)
+Two independent concerns:
+1. **Historical PP Data** — 📷 photos (Sonnet vision) or 📊 Brisnet CSV (local parse). `pp:` storage.
+2. **Live Tote Odds** — 🎰 TwinSpires screenshot (Sonnet vision). `odds:` storage, timestamped.
 
-The scan modal has two modes via a toggle:
+Collapsible accordion UI; app expands whichever section is missing data.
 
-### Photo mode (📷)
-- Multi-image upload (camera or gallery)
-- Sonnet 4.5 vision extracts PP data → structured JSON
-- Saves with `source: 'photo'` tag
-- Cost: ~$0.05-$0.15 per page
+## Brisnet parser (unchanged)
 
-### Brisnet file mode (📊)
-- File picker for `.csv`, `.drf`, `.txt` (Brisnet's Single PP format)
-- **Parsed entirely client-side** — no API call
-- One file typically contains the whole card
-- Import scope toggle: "Whole card" vs "Just this race"
-- Saves with `source: 'brisnet'` tag
-- Cost: free (just parsing)
+Spec-verified against Brisnet Single File format. Tested end-to-end against real KEE0411.csv: 11 races, 115 horses, 0 parse errors.
 
-Last-used mode is remembered in `localStorage.postTime_scanMode`.
+Key fields: name=45, sire=52, dam=54, jockey=33, trainer=28, programNum=43, ML=44, runStyle=210, quirin=211, primePower=251. PP arrays start at 256. Trip comments at 396 (PP[0]). Best BRIS speeds 1178-1181 + 1328-1331. Trainer angles 1337-1366. Full map in `BRIS_FIELD` constant.
 
-## Brisnet parser (in index.html)
+`yardsToDistance` handles 4F-2mi in 1/8 and 1/16 increments including the 1870y=1 1/16mi edge case.
 
-The parser lives inline. Key functions:
+## Value School (v7, unchanged)
 
-- `parseCSVLine(line)` — CSV parser handling quoted commas
-- `getField(row, fieldNum)` — 1-indexed field access, null if empty
-- `getNumField(row, fieldNum)` — parsed number or null
-- `yardsToDistance(yards)` — converts to "6 Furlongs" etc
-- `surfaceCodeToName(code)` — D→Dirt, T→Turf, etc.
-- `raceTypeToName(code)` — G1→"Grade I Stakes", etc.
-- `parseBrisnetRow(row)` — one horse row → JSON matching app schema
-- `parseBrisnetFile(text)` — whole file → `{ byRace, trackCode, parseErrors }`
+### Prompt
 
-### BRIS_FIELD map — SPEC-VERIFIED
+Synthesis outputs `fieldProbabilities: [{ postPosition, name, winProbability }]` that sum to ~1.0. Calibration guidance: standouts 40-50%, chalks 25-35%, contenders 10-20%, longshots 5-10%, bombs 2-4%.
 
-Full field list verified against Brisnet's official "Single File" data structure document (uploaded from support.brisnet.com). The map in `index.html` is authoritative.
+### Overlay math
 
-Key reference points:
+```
+toteImplied = 1 / (decimalOdds + 1)
+toteNorm = normalize(tote)    // strip takeout (~15-25%)
+aiNorm = normalize(ai)         // strip calibration drift
+ratio = aiNorm / toteNorm
 
-- **Today's race (1-25):** track=1, date=2, raceNum=3, postPosition=4, distanceYards=6, surface=7, raceType=9, purse=12, claimingPrice=13, trackRecord=15, raceConditions=16, breedType=23, allWeather=25
-- **Connections (28-44):** currentTrainer=28, trainer meet stats 29-32, currentJockey=33, jockey meet stats 35-38, owner=39, programNumber=43, **morningLineOdds=44** (was 61 in older specs — verify if importing old files)
-- **Horse ID (45-58):** horseName=45, yearOfBirth=46, foalMonth=47, sex=49, horseColor=50, weight=51, sire=52, sireSire=53, dam=54, damSire=55, breeder=56, stateBred=57, programPostPosition=58
-- **Horse stats (62-101):** medication=62, equipmentChange=64, distance record 65-69, track record 70-74, turf record 75-79, wet record 80-84, current year 85-90 (85 is year), previous year 91-96, **lifetime 97-101** (not 95-99)
-- **Workouts (102-209):** 12 slots each: date=102, time=114 (negative=bullet), track=126, distance=138, condition=150, description=162, trackType=174, numWorks=186, rank=198
-- **Pace critical (210-224):** **brisRunStyle=210** (E/EP/P/S), **quirinSpeedPoints=211** (0-8), pace pars 214-218, T/J combo 365d 219-223, daysSinceLastRace=224
-- **Flagship:** **BRIS Prime Power = field 251**
-- **PP arrays (256-1145):** ppDate=256, ppBrisTrackCode=286, ppRaceNum=296, ppDistanceYards=316, ppSurface=326, ppPostPosition=356, **ppTripComment=396** (NOT 696 — that's BRIS Race Shape), ppWeight=506, ppOdds=516, ppCallPositions=566-615, **ppBrisSpeedRating=846** (this is the BRIS-speed Beyer equivalent), ppFinalTime=1036, ppTrainer=1056, ppJockey=1066, ppRaceType=1086
-- **Beaten lengths:** start=636/646 (margin/only), 1st=656/666, 2nd=676/686, stretch=716/726, finish=736/746 (for winner, 736 = winning margin, 746 = 0)
-- **Trainer angle categories (1337-1366):** 6 pre-computed angles per horse, each with label/starts/win%/itm%/ROI — these are GOLD for the analysis prompt
-- **Best BRIS speeds:** 1178 (fast), 1179 (turf), 1180 (off), 1181 (distance), 1328 (life), 1329 (year), 1331 (this track)
+>=2.0  → BIG (rose)
+>=1.5  → Meaningful (amber)
+>=1.25 → Small (light amber)
+<=0.75 → Underlay (grey)
+```
 
-### Parser verified
+### Kelly sizing
 
-Tested against a synthetic row in Node.js. All key fields extract correctly including BRIS Run Style, Quirin Speed Points, Prime Power, pedigree, medication decoding (0-9 numeric → "L"/"B"/"L1" etc), running line construction from call positions + beaten lengths, bullet workout detection from negative times, and the 10-deep past performance array.
+Quarter-Kelly (0.25x). Bankroll persisted in `postTime_bankroll`.
 
-### ⚠ Remaining caveats
+```
+fullKelly = (p*(b+1) - 1) / b
+betSize = bankroll * fullKelly * 0.25
+```
 
-- Parser handles empty CSV fields correctly (returns null)
-- Medication code 9 = "info unavailable" treated as null
-- Two-digit year format: `<50` → 2000s, `>=50` → 1900s
-- If a real-world file produces garbage, run `parseBrisnetFile(text)` and inspect `parseErrors` array for hints
+## Analysis flow
 
-## Analysis flow (runAnalysis)
+N+1 API calls: per-horse research (parallel, concurrency 3) + synthesis.
 
-Unchanged from v5 except the PP context block now:
-- Distinguishes `source: 'brisnet'` from `source: 'photo'` in prompt
-- Includes BRIS Prime Power, best speed figures, pedigree, medication, equipment change
-- Adds explicit analysis signals the model should look for (trip comments, Prime Power, speed trajectory, workout pattern, layoff angle)
-
-Still N+1 calls per race: per-horse research (parallel, concurrency 3) + synthesis with 8-step pace methodology.
+Synthesis includes 9 steps ending in `fieldProbabilities` distribution across all horses.
 
 ## Models
 
 ```js
 MODELS = {
-  haiku:  { id: 'claude-haiku-4-5-20251001' },
-  sonnet: { id: 'claude-sonnet-4-5' },
-  opus:   { id: 'claude-opus-4-7' }
+  haiku:  'claude-haiku-4-5-20251001',    // data extraction
+  sonnet: 'claude-sonnet-4-5',            // vision + default analysis
+  opus:   'claude-opus-4-7'               // optional deep analysis
 }
 ```
 
-- Data extraction (tracks, race card, entries, conditions): always Haiku
-- OCR/vision (photo scans): always Sonnet
-- Deep-dive analysis: user-selected (default Sonnet)
-- Brisnet parsing: no API call — runs locally
-
 ## Roadmap
 
-**Done through v6:**
-- v1–v2: initial build
-- v3: flipped to date-first HRN architecture
-- v4: model picker, live conditions, deep-dive
-- v5: photo OCR + pace-school methodology + trip flagging
-- v6: **dual input (photo OR Brisnet file), Brisnet parser, bulk card import, source-tagged storage, source badges, updated analysis prompts**
+Done:
+- v1-v4: initial build through deep-dive
+- v5: photo OCR + pace-school + trip flagging
+- v6: Brisnet parser, bulk import
+- v7: Two-section scan modal, Value School (overlays, Kelly)
+- **v7.1: Nav state persistence, saved analysis with age+Re-run, back-button history integration**
 
-**Next agreed feature — Value School (v7):**
-
-The Crist/Benter move. Right now the app picks winners; Value School finds overlays (horses where AI probability > tote implied probability).
-
-Spec for the build:
-
-1. **New view or modal after analysis completes** — "Enter Live Odds" screen. For each horse in the field, user types in the current tote odds (they can copy from TwinSpires, NYRA Bets, or the track's tote board). App parses flexible formats: "5-2", "2.5", "5/2", "12-1" all work.
-
-2. **Compute implied probabilities on both sides:**
-   - Tote implied probability = `1 / (odds + 1)` where odds is decimal. For 5-2, that's `1 / 3.5 = 0.286`.
-   - AI implied probability — derive from the existing `confidence` field (1-10). Normalize across field: `horse.confidence / sum(all confidences)`. This is a rough proxy; we can tune with a softmax or calibration curve later.
-   - **Alternative:** have the analysis prompt explicitly output `impliedProbability` per horse (0-1 that sum to ~1.0) instead of a 1-10 confidence. Better approach — do this at the prompt level, not as a derived calculation.
-
-3. **Overlay detection** — flag horses where AI probability ≥ 1.25× tote probability. Tier the flags:
-   - 1.25-1.5× = "Small overlay" (yellow)
-   - 1.5-2.0× = "Meaningful overlay" (amber)
-   - 2.0×+ = "Big overlay" (rose) — rare, investigate why the market disagrees
-   - Underlays (AI prob < tote prob) worth noting too so user knows what NOT to bet.
-
-4. **Optional Kelly sizing** — for each overlay, compute `edge / odds` as bet fraction of bankroll. Default to fractional Kelly (0.25×) because full Kelly is too aggressive for horse betting. UI: user enters bankroll once, app shows "$8 to win" type sizing for each overlay.
-
-5. **Overlay summary card on analysis screen** — add a section above the picks showing:
-   - Biggest overlay(s)
-   - Any underlays in the AI's top 3 (that's a warning sign)
-   - Net expected value of a straight-bet strategy on overlays only
-
-**UI placement:** Add an "Enter Odds" button on the analysis screen. Tapping reveals an inline list of the field with odds input fields. After entering, the screen re-renders with overlay flags inline and a new summary card.
-
-**Prompt change needed:** Update the per-horse research prompt to include `impliedProbability: 0.12` instead of (or alongside) `confidence: 7`. Update the synthesis prompt to also output per-horse implied probabilities that sum to ~1.0. Instruct the model to calibrate — morning-line favorites should be in the 25-35% range, longshots 3-8%, don't output a 10-horse race where every horse is 15%.
-
-**Acceptance test:** Run the 2024 Kentucky Oaks through the app, enter the actual closing tote odds, verify the app correctly flagged Thorpedo Anna (if she was an overlay) or correctly identified whatever overlays the pros found that day.
-
-**Not committed:**
-- Style Selector (Beyer/Brohamer/Crist/Davidowitz school modes) — probably post-Derby
-- Scoreboard (track user picks vs AI picks across a day)
-- Cross-device sync (currently localStorage-only)
-- Fuzzy horse name matching (currently exact case-insensitive; names occasionally mismatch between HRN entries and Brisnet/photo PP data)
-- Multi-file Brisnet format support (we only support Single File today)
-- Proxy backend so friends don't need their own API keys (has real cost implications — see "Hosting & sharing" section)
+Next (not committed):
+- Multi-model (GPT, Gemini) — discussed in chat, deferred until post-Derby
+- Scoreboard (user picks vs AI)
+- Cross-device sync
+- Odds history (multiple snapshots per race)
 
 ## Deployment
 
-### GitHub Pages (user's preferred method)
-1. Push folder to a public repo
+GitHub Pages:
+1. Push to public repo
 2. Settings → Pages → Deploy from `main` branch → root
-3. Live at `https://username.github.io/repo/`
-4. Updates: commit + push, auto-redeploys in ~60s
+3. `https://username.github.io/repo/`
 
-### Netlify Drop
-1. app.netlify.com/drop → drag folder
+Updates: commit + push, auto-redeploys in ~60s. Bump `CACHE_NAME` in service-worker.js on every version.
 
 ## Local dev
 
 ```bash
-cd post-time-v6
+cd post-time-v7.1
 python3 -m http.server 8000
-# localhost:8000 works for PWA install on desktop
-# For phone testing: ngrok http 8000
 ```
 
-## Pre-Oaks test plan (before May 1, 2026)
+## Pre-Oaks test plan
 
-Before trusting this on Oaks Day, the plan was:
+1. Deploy v7.1 to GitHub Pages
+2. Buy Brisnet Single PP for a weekend Keeneland card
+3. Upload, bulk import whole card
+4. Pick a race, run deep-dive
+5. Screenshot TwinSpires Advanced, upload to odds section
+6. Verify overlay panel appears with Kelly sizing
+7. **v7.1 test: close app, reopen. Should land back on analysis screen with timestamp banner.**
+8. **v7.1 test: press back button. Should walk up to entries, not exit.**
 
-1. **Deploy v6 to GitHub Pages** — confirm installs cleanly on phone, PWA works.
-2. **Buy one Brisnet Single PP file for a live Keeneland or CD card** (~$3 from brisnet.com → PP Data → Single).
-3. **Run end-to-end on that card:**
-   - Navigate to the track/date
-   - Upload the Brisnet file, choose "Whole card" scope
-   - Verify all races show 📊 badges
-   - Open a meaningful race, verify horse names populate correctly
-   - Run deep-dive analysis, confirm Prime Power and BRIS Run Style show up in the analysis output
-4. **If parser breaks anywhere:** export the file, check `parseErrors` in the preview, note which fields came back garbled.
-5. **Also verify photo mode still works** — take clean photos of one race's PPs, confirm OCR extracts.
+## Common issues
 
-### Common issues to check first if something breaks
-
-- **"Horse name is empty"** — field 45 must match horseName. If older Brisnet file, field 44 might be name instead.
-- **"Beyer figures all null"** — check that `ppBrisSpeedRating: 846` is correct for the file version. If all PPs have null Beyers, the 846 mapping is likely off by a position.
-- **"Trip comments all empty"** — Brisnet may not ship trip comments in lower-tier products. This is a product-level issue, not a parser bug.
-- **"App crashes on parse"** — open browser DevTools console. The error likely points to a field access on undefined; usually means the file has fewer columns than expected (maybe a Multi File format instead of Single).
-- **"PP data saved but analysis ignores it"** — check that horse name in the HRN entries matches horse name in the Brisnet file. Match is case-insensitive exact. If Brisnet has "Thorpedo Anna" and HRN has "Thorpedo Anna (USA)", they won't match. User can edit name in the field input to fix.
+- `fieldProbabilities missing` → old analysis from pre-v7. Hit Re-run.
+- Overlays all "Fair price" → AI probs too flat or market agrees. Both legit.
+- Kelly zero everywhere → no edge exists; distribution doesn't exceed tote.
+- Odds scan weird names → cropped multiple races. Re-snap tighter.
+- Stale analysis banner after reopen → expected; hit Re-run.
+- Back button exits on home screen → expected; standard PWA behavior at root.
 
 ## When adding features
 
 - Use `callClaude()` helper
-- For data parsing use `MODELS.haiku.id`, analysis uses `selectedModel`, vision uses Sonnet
-- For new views: add to state machine + breadcrumb + goXView helper
-- For new PP fields: add to BRIS_FIELD + parseBrisnetRow + photo prompt + analysis ppContext
+- Haiku for extraction, selectedModel for analysis, Sonnet for vision
+- New views: state machine + breadcrumb + goX helper + history integration
+- New PP fields: BRIS_FIELD + parseBrisnetRow + photo prompt + ppContext
 - Always return JSON from prompts; `callClaude` extracts first `{` to last `}`
-- Bump `CACHE_NAME` when shipping
-- Test the parser at the Node level before shipping by extracting the module — the app's evolution is now at the point where blind UI-only testing misses real bugs
+- **Bump CACHE_NAME on every ship**
+- Test parser in Node against KEE0411.csv before shipping
 
 ## User context
 
-- Based in Louisville, KY (Churchill is home track)
+- Louisville, KY (Churchill home track)
 - Attending Oaks May 1, Derby May 2, 2026
-- MSP tech background; comfortable with code and Python
-- Uses Claude Code for local development
-- Philosophy preference: rigorous handicapping, not gambling aid. Wants to race his own picks against the AI's picks.
-- Engaged with the handicapping tradition — we talked through Beyer, Brohamer, Davidowitz, Ragozin, Crist, Benter. App currently hybrids Speed + Pace + Trip schools; Value School is next.
+- MSP tech background; comfortable with code
+- Uses Claude Code locally
+- Philosophy: rigorous handicapping, not gambling aid
+- Uses TwinSpires for bet placement
+- Hybridizes Speed (Beyer) + Pace (Brohamer) + Trip (Davidowitz/Ragozin) + Value (Crist/Benter)
 
-## Hosting & sharing model
+## Hosting
 
-- **Hosting:** GitHub Pages, user's own account. Public repo, deployed from `main` branch root.
-- **HTTPS:** GitHub Pages enforces HTTPS by default; no configuration needed for PWA install.
-- **Friend sharing:** BYO API keys — each friend creates their own Anthropic account, adds $10-20 credit, pastes their key into the app. No proxy, no shared secret, no server costs on user's side.
-- **Friend onboarding doc:** `post-time-quick-start.md` — short enough to text. Covers install, API key setup, per-race cost, and the "race your picks against AI" framing.
-
-## What's driven the roadmap (feedback loop)
-
-- **Friend feedback drove v6.** A friend pushed back on OCR accuracy concerns for small program text and asked about Brisnet file upload. That's why we built dual-mode input with Brisnet support before Value School.
-- **Lesson:** For user-facing tools, real user feedback beats internal roadmap guesses. Take friend testing seriously; it points at real friction.
+GitHub Pages, user's own repo. Public, HTTPS. BYO API keys for friends.

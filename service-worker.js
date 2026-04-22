@@ -1,4 +1,4 @@
-const CACHE_NAME = 'post-time-v7';
+const CACHE_NAME = 'post-time-v7-1';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {}));

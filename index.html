@@ -202,35 +202,7 @@
     .scanned-summary { background: rgba(110, 231, 183, 0.08); border: 1px solid rgba(110, 231, 183, 0.3); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #d6d3d1; }
     .scanned-summary strong { color: #6ee7b7; }
 
-    /* v7: Value School — Overlay panel */
-    .overlay-grid { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-    .overlay-row { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; border-left: 3px solid #44403c; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-    @media (min-width: 640px) { .overlay-row { flex-direction: row; align-items: center; gap: 1rem; } }
-    .overlay-horse { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
-    .overlay-post { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: rgba(253, 164, 175, 0.7); min-width: 1.8rem; text-align: center; }
-    .overlay-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: #e7e5e4; flex: 1; overflow: hidden; text-overflow: ellipsis; }
-    .overlay-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; border: 1px solid; padding: 0.15rem 0.4rem; white-space: nowrap; }
-    .overlay-numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; min-width: 0; }
-    @media (min-width: 640px) { .overlay-numbers { grid-template-columns: repeat(4, minmax(60px, 1fr)); } }
-    .overlay-num { text-align: center; padding: 0 0.25rem; }
-    .overlay-num-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: #78716c; text-transform: uppercase; }
-    .overlay-num-value { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: #e7e5e4; font-weight: 600; margin: 0.1rem 0; }
-    .overlay-num-sub { font-size: 9px; color: #57534e; font-style: italic; }
-
-    /* v7: Collapsible data sections in scan modal */
-    .data-section { border: 1px solid #292524; margin-bottom: 0.75rem; }
-    .data-section.expanded { border-color: #44403c; }
-    .section-header { width: 100%; background: rgba(28, 25, 23, 0.4); border: none; padding: 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: inherit; font: inherit; text-align: left; }
-    .section-header:hover:not(:disabled) { background: rgba(28, 25, 23, 0.7); }
-    .section-header:disabled { cursor: default; }
-    .section-title { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
-    .section-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fda4af; width: 1.5rem; text-align: center; }
-    .section-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #e7e5e4; }
-    .section-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #a8a29e; margin-top: 0.15rem; text-transform: uppercase; }
-    .section-chevron { font-family: 'JetBrains Mono', monospace; color: #78716c; font-size: 1.25rem; font-weight: bold; }
-    .section-body { padding: 0.75rem 1rem 1rem; border-top: 1px solid #292524; }
-
-    /* v7: Mode toggle */
+    /* v6: Mode toggle */
     .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; border: 1px solid #292524; padding: 0.25rem; }
     .mode-btn { background: transparent; border: none; padding: 0.75rem; cursor: pointer; color: #a8a29e; font: inherit; font-family: 'Playfair Display', serif; font-size: 0.95rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
     .mode-btn:hover { color: #e7e5e4; }
@@ -255,6 +227,52 @@
     .scope-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
     .scope-toggle label { margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Crimson Pro', serif; text-transform: none; letter-spacing: 0; color: #d6d3d1; font-size: 0.9rem; }
     .scope-toggle input[type="checkbox"] { width: auto; margin: 0; accent-color: #fcd34d; }
+
+    /* v7: Tote panel on entries screen */
+    .tote-panel { background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.25); padding: 0.9rem 1rem; margin-bottom: 1rem; }
+    .tote-panel.loaded { border-color: rgba(168, 85, 247, 0.5); background: rgba(168, 85, 247, 0.08); }
+    .tote-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .tote-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: #c4b5fd; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem; }
+    .tote-action { background: none; border: 1px solid rgba(168, 85, 247, 0.4); color: #c4b5fd; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.3rem 0.6rem; cursor: pointer; }
+    .tote-action:hover { background: rgba(168, 85, 247, 0.15); color: #e7e5e4; border-color: #c4b5fd; }
+    .tote-status { color: #a8a29e; font-size: 0.85rem; font-style: italic; }
+    .tote-status.fresh { color: #6ee7b7; font-style: normal; }
+    .tote-status.stale { color: #fcd34d; font-style: normal; }
+    .tote-status.very-stale { color: #fb7185; font-style: normal; }
+    .tote-odds-list { margin-top: 0.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0.3rem 0.6rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #d6d3d1; }
+    .tote-odds-item .post { color: #78716c; margin-right: 0.3rem; }
+    .tote-odds-item .odds { color: #c4b5fd; }
+    .tote-odds-item .pool { color: #57534e; margin-left: 0.3rem; }
+
+    /* v7: Overlay detection card on analysis screen */
+    .overlay-panel { background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(76, 29, 149, 0.05)); border: 1px solid rgba(168, 85, 247, 0.4); padding: 1.25rem; margin-bottom: 1.5rem; }
+    .overlay-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+    .overlay-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: #e7e5e4; }
+    .overlay-title .icon-box { color: #c4b5fd; }
+    .overlay-subtitle { color: #a8a29e; font-size: 0.85rem; font-style: italic; margin-bottom: 1rem; }
+    .overlay-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+    .overlay-row { display: grid; grid-template-columns: 2.2rem 1fr auto auto auto; gap: 0.75rem; align-items: center; padding: 0.6rem 0.75rem; border-left: 2px solid transparent; background: rgba(12, 10, 9, 0.3); font-size: 0.9rem; }
+    .overlay-row.big { border-left-color: #fb7185; background: rgba(251, 113, 133, 0.08); }
+    .overlay-row.mid { border-left-color: #fcd34d; background: rgba(252, 211, 77, 0.05); }
+    .overlay-row.small { border-left-color: #fcd34d; opacity: 0.85; }
+    .overlay-row.under { border-left-color: #78716c; opacity: 0.7; }
+    .overlay-row .post { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: rgba(253, 164, 175, 0.8); text-align: center; }
+    .overlay-row .name { font-family: 'Playfair Display', serif; font-size: 1rem; color: #e7e5e4; }
+    .overlay-row .odds { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #c4b5fd; }
+    .overlay-row .prob { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #a8a29e; text-align: right; }
+    .overlay-row .tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 0.15rem 0.4rem; letter-spacing: 0.1em; text-transform: uppercase; }
+    .overlay-row.big .tag { color: #0c0a09; background: #fb7185; }
+    .overlay-row.mid .tag { color: #0c0a09; background: #fcd34d; }
+    .overlay-row.small .tag { color: #fcd34d; border: 1px solid #fcd34d; }
+    .overlay-row.under .tag { color: #78716c; border: 1px solid #44403c; }
+    .overlay-empty { text-align: center; color: #78716c; font-style: italic; padding: 1rem 0; font-size: 0.85rem; }
+    .overlay-summary { display: flex; gap: 1.5rem; padding-top: 0.75rem; margin-top: 0.75rem; border-top: 1px solid rgba(168, 85, 247, 0.15); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: #a8a29e; flex-wrap: wrap; }
+    .overlay-summary strong { color: #c4b5fd; }
+
+    /* v7: Scan modal — section dividers */
+    .modal-section-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; text-transform: uppercase; margin: 1.2rem 0 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid #292524; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .modal-section-label:first-child { margin-top: 0; }
+    .modal-section-hint { color: #57534e; font-size: 0.8rem; font-style: italic; letter-spacing: 0; text-transform: none; font-family: 'Crimson Pro', serif; text-align: right; }
   </style>
 </head>
 <body>
@@ -285,7 +303,7 @@
       opus: { id: 'claude-opus-4-7', name: 'Opus 4.7', priceNote: '~$3-5 / race', desc: 'Deepest research. For stakes and big bets.' }
     };
 
-    // Storage helpers — PP data (persists indefinitely)
+    // Storage helpers — PP data (historical)
     const ppStorageKey = (trackSlug, date, raceNum) => `pp:${trackSlug}:${date}:race${raceNum}`;
     const savePPData = (trackSlug, date, raceNum, data) => {
       try { localStorage.setItem(ppStorageKey(trackSlug, date, raceNum), JSON.stringify(data)); return true; }
@@ -312,78 +330,89 @@
       return races;
     };
 
-    // Storage helpers — Tote odds data (ephemeral, timestamped)
+    // Storage helpers — live tote odds (ephemeral)
     const oddsStorageKey = (trackSlug, date, raceNum) => `odds:${trackSlug}:${date}:race${raceNum}`;
     const saveOddsData = (trackSlug, date, raceNum, data) => {
-      try { localStorage.setItem(oddsStorageKey(trackSlug, date, raceNum), JSON.stringify(data)); return true; }
+      try {
+        const payload = { ...data, capturedAt: Date.now() };
+        localStorage.setItem(oddsStorageKey(trackSlug, date, raceNum), JSON.stringify(payload));
+        return true;
+      }
       catch (e) { console.error('Odds storage failed:', e); return false; }
     };
     const loadOddsData = (trackSlug, date, raceNum) => {
       try { const s = localStorage.getItem(oddsStorageKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
       catch (e) { return null; }
     };
-    const deleteOddsData = (trackSlug, date, raceNum) => {
-      try { localStorage.removeItem(oddsStorageKey(trackSlug, date, raceNum)); return true; }
-      catch (e) { return false; }
+    const getOddsFreshness = (odds) => {
+      if (!odds || !odds.capturedAt) return null;
+      const ageMs = Date.now() - odds.capturedAt;
+      const ageMin = Math.floor(ageMs / 60000);
+      return { ageMin, stale: ageMin > 30, veryStale: ageMin > 120 };
     };
 
-    // Odds parsing — accept "5-2", "5/2", "2.5", "12-1", "8/5"
-    const parseOdds = (input) => {
-      if (!input) return null;
-      const s = String(input).trim();
+    // Parse odds in various formats to decimal (e.g. "5-2" or "5/2" => 2.5, "2" => 2, "1/2" => 0.5)
+    const parseOdds = (str) => {
+      if (str === null || str === undefined) return null;
+      const s = String(str).trim();
       if (!s) return null;
-      // Decimal format: "2.5" or "2.50"
-      if (/^\d+(\.\d+)?$/.test(s)) {
-        const n = parseFloat(s);
-        return isNaN(n) ? null : n;
+      // Fractional "5-2" or "5/2"
+      const frac = s.match(/^(\d+(?:\.\d+)?)\s*[-\/]\s*(\d+(?:\.\d+)?)$/);
+      if (frac) {
+        const n = parseFloat(frac[1]), d = parseFloat(frac[2]);
+        if (d === 0) return null;
+        return n / d;
       }
-      // Fractional: "5-2", "5/2", "8/5", "12-1"
-      const m = s.match(/^(\d+(?:\.\d+)?)[\/\-](\d+(?:\.\d+)?)$/);
-      if (m) {
-        const num = parseFloat(m[1]);
-        const den = parseFloat(m[2]);
-        if (isNaN(num) || isNaN(den) || den === 0) return null;
-        return num / den;
-      }
+      // Decimal "2.5" or "12"
+      const dec = parseFloat(s);
+      if (!isNaN(dec)) return dec;
       return null;
     };
 
-    // Overlay math
-    const computeImpliedFromOdds = (decimalOdds) => {
-      // Fractional odds to implied probability. 5-1 (decimal 5.0) → 1/6 = 0.167
-      if (decimalOdds == null || decimalOdds <= 0) return null;
-      return 1 / (decimalOdds + 1);
+    // Tote odds to implied probability (unnormalized)
+    const oddsToImplied = (oddsStr) => {
+      const decimal = parseOdds(oddsStr);
+      if (decimal === null) return null;
+      return 1 / (decimal + 1);
     };
 
-    const normalizeProbabilities = (probs) => {
-      // Normalize an array of probabilities so they sum to 1.0 (removes takeout from tote, removes calibration drift from AI)
-      const sum = probs.reduce((a, b) => a + (b || 0), 0);
-      if (sum === 0) return probs.map(() => 0);
-      return probs.map(p => (p || 0) / sum);
+    // v7.1: Nav state persistence — remember where user was across app opens
+    const NAV_KEY = 'postTime_nav';
+    const saveNavState = (state) => {
+      try { localStorage.setItem(NAV_KEY, JSON.stringify({ ...state, savedAt: new Date().toISOString() })); }
+      catch (e) { /* ignore */ }
+    };
+    const loadNavState = () => {
+      try { const s = localStorage.getItem(NAV_KEY); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
     };
 
-    const classifyOverlay = (aiProb, toteProb) => {
-      if (!aiProb || !toteProb) return null;
-      const ratio = aiProb / toteProb;
-      if (ratio >= 2.0) return { tier: 'big', ratio, color: '#fda4af', label: 'BIG overlay' };
-      if (ratio >= 1.5) return { tier: 'meaningful', ratio, color: '#fcd34d', label: 'Meaningful overlay' };
-      if (ratio >= 1.25) return { tier: 'small', ratio, color: '#fde68a', label: 'Small overlay' };
-      if (ratio <= 0.67) return { tier: 'big-under', ratio, color: '#57534e', label: 'Big underlay' };
-      if (ratio <= 0.80) return { tier: 'under', ratio, color: '#57534e', label: 'Underlay' };
-      return { tier: 'fair', ratio, color: '#78716c', label: 'Fair price' };
+    // v7.1: Analysis persistence — save completed deep-dive so we can show on reopen
+    const analysisStorageKey = (trackSlug, date, raceNum) => `analysis:${trackSlug}:${date}:race${raceNum}`;
+    const saveAnalysisData = (trackSlug, date, raceNum, analysis, conditions, entries, horses, raceCard, selectedTrack, selectedRace) => {
+      try {
+        localStorage.setItem(analysisStorageKey(trackSlug, date, raceNum), JSON.stringify({
+          analysis, conditions, entries, horses, raceCard, selectedTrack, selectedRace,
+          timestamp: new Date().toISOString()
+        }));
+        return true;
+      } catch (e) { console.error('Analysis save failed:', e); return false; }
     };
-
-    // Kelly sizing — fractional Kelly to avoid the aggressiveness of full Kelly
-    // edge = aiProb - toteProb (in normalized probability space)
-    // For bet sizing we use raw decimal odds and AI's subjective probability
-    const computeKelly = (aiProb, decimalOdds, bankroll, fraction = 0.25) => {
-      if (!aiProb || !decimalOdds || !bankroll) return 0;
-      // Full Kelly formula for fixed-odds: f* = (p*(b+1) - 1) / b, where b = decimalOdds
-      const b = decimalOdds;
-      const p = aiProb;
-      const fullKelly = (p * (b + 1) - 1) / b;
-      if (fullKelly <= 0) return 0;
-      return Math.max(0, bankroll * fullKelly * fraction);
+    const loadAnalysisData = (trackSlug, date, raceNum) => {
+      try { const s = localStorage.getItem(analysisStorageKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+    // Format age of a timestamp as "3m ago" / "2h 15m ago" / "Apr 20"
+    const formatAge = (isoString) => {
+      if (!isoString) return null;
+      const mins = Math.floor((Date.now() - new Date(isoString).getTime()) / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ${mins % 60}m ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return `${days}d ago`;
+      return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     // ================================================================
@@ -1154,6 +1183,9 @@
     const IconCamera = () => <Icon><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></Icon>;
     const IconScan = () => <Icon><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><line x1="7" y1="12" x2="17" y2="12" /></Icon>;
     const IconTrash = () => <Icon><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></Icon>;
+    const IconTote = () => <Icon><circle cx="12" cy="12" r="10" /><line x1="12" y1="6" x2="12" y2="12" /><line x1="12" y1="12" x2="16" y2="14" /></Icon>;
+    const IconTarget = () => <Icon><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></Icon>;
+    const IconFlame = () => <Icon><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></Icon>;
 
     const formatDate = (d) => {
       const y = d.getFullYear();
@@ -1221,58 +1253,46 @@
       catch (e) { console.error('Parse fail:', textBlocks); throw new Error(`Invalid JSON: ${textBlocks.slice(0, 200)}`); }
     };
 
-    // SCAN MODAL — two-section design:
-    //   Section 1: Historical PP Data (Photo OCR OR Brisnet file)
-    //   Section 2: Live Tote Data (TwinSpires screenshot)
-    function ScanModal({ apiKey, track, date, race, allRaces, existingPP, existingOdds, onClose, onSaved }) {
-      // Last-used PP mode
-      const [ppMode, setPpMode] = useState(() => localStorage.getItem('postTime_scanMode') || 'photo');
-      useEffect(() => { localStorage.setItem('postTime_scanMode', ppMode); }, [ppMode]);
+    // SCAN MODAL COMPONENT — dual mode: photos OR Brisnet file
+    function ScanModal({ apiKey, track, date, race, allRaces, existing, onClose, onSaved }) {
+      // Mode: 'photo' or 'brisnet', defaults to last-used
+      const [mode, setMode] = useState(() => localStorage.getItem('postTime_scanMode') || 'photo');
+      useEffect(() => { localStorage.setItem('postTime_scanMode', mode); }, [mode]);
 
-      // Which section is expanded: 'pp' or 'odds'
-      const [expandedSection, setExpandedSection] = useState(existingPP ? 'odds' : 'pp');
+      // Photo mode state
+      const [images, setImages] = useState([]);
+      const [previews, setPreviews] = useState([]);
+      const [dragging, setDragging] = useState(false);
+      const fileInputRef = useRef(null);
 
-      // PP — photo mode state
-      const [ppImages, setPpImages] = useState([]);
-      const [ppPreviews, setPpPreviews] = useState([]);
-      const [ppDragging, setPpDragging] = useState(false);
-      const ppFileInputRef = useRef(null);
-
-      // PP — Brisnet mode state
+      // Brisnet mode state
       const [brisnetFile, setBrisnetFile] = useState(null);
-      const [brisnetPreview, setBrisnetPreview] = useState(null);
-      const [importScope, setImportScope] = useState('all');
+      const [brisnetPreview, setBrisnetPreview] = useState(null); // { raceCount, horseCount, trackCode }
+      const [importScope, setImportScope] = useState('all'); // 'all' or 'this'
       const brisnetInputRef = useRef(null);
       const [brisnetDragging, setBrisnetDragging] = useState(false);
 
-      // Odds — screenshot mode state
-      const [oddsImages, setOddsImages] = useState([]);
-      const [oddsPreviews, setOddsPreviews] = useState([]);
-      const [oddsDragging, setOddsDragging] = useState(false);
-      const oddsFileInputRef = useRef(null);
-
-      // Shared
+      // Shared state
       const [processing, setProcessing] = useState(false);
       const [status, setStatus] = useState('');
       const [error, setError] = useState(null);
 
-      // PP photo handlers
-      const handlePpFiles = async (fileList) => {
+      const handleFiles = async (fileList) => {
         const newFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
         if (newFiles.length === 0) return;
-        const newImages = [...ppImages, ...newFiles];
-        setPpImages(newImages);
+        const newImages = [...images, ...newFiles];
+        setImages(newImages);
         const newPreviews = await Promise.all(newImages.map(f => new Promise(res => {
           const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
         })));
-        setPpPreviews(newPreviews);
-      };
-      const removePpImage = (idx) => {
-        setPpImages(ppImages.filter((_, i) => i !== idx));
-        setPpPreviews(ppPreviews.filter((_, i) => i !== idx));
+        setPreviews(newPreviews);
       };
 
-      // Brisnet handler
+      const removeImage = (idx) => {
+        setImages(images.filter((_, i) => i !== idx));
+        setPreviews(previews.filter((_, i) => i !== idx));
+      };
+
       const handleBrisnetFile = async (file) => {
         if (!file) return;
         setBrisnetFile(file);
@@ -1283,38 +1303,21 @@
           const raceCount = Object.keys(byRace).length;
           const horseCount = Object.values(byRace).reduce((sum, r) => sum + r.horses.length, 0);
           setBrisnetPreview({ raceCount, horseCount, trackCode, byRace, parseErrors });
-          if (raceCount === 0) setError('No races parsed from file. Is this a Brisnet Single PP CSV?');
+          if (raceCount === 0) setError('No races parsed from file. Is this a valid Brisnet Single PP file?');
         } catch (e) {
           setError(`Could not parse file: ${e.message}`);
           setBrisnetPreview(null);
         }
       };
 
-      // Odds screenshot handlers
-      const handleOddsFiles = async (fileList) => {
-        const newFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
-        if (newFiles.length === 0) return;
-        const newImages = [...oddsImages, ...newFiles];
-        setOddsImages(newImages);
-        const newPreviews = await Promise.all(newImages.map(f => new Promise(res => {
-          const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
-        })));
-        setOddsPreviews(newPreviews);
-      };
-      const removeOddsImage = (idx) => {
-        setOddsImages(oddsImages.filter((_, i) => i !== idx));
-        setOddsPreviews(oddsPreviews.filter((_, i) => i !== idx));
-      };
-
-      // Run PP photo extraction (vision)
-      const runPpPhotoExtraction = async () => {
-        if (ppImages.length === 0) { setError('Add at least one image'); return; }
+      const runPhotoExtraction = async () => {
+        if (images.length === 0) { setError('Add at least one image'); return; }
         setProcessing(true); setError(null); setStatus('Encoding images...');
         try {
-          const imageData = await Promise.all(ppImages.map(async f => ({
+          const imageData = await Promise.all(images.map(async f => ({
             mediaType: f.type, data: await fileToBase64(f)
           })));
-          setStatus(`Reading ${ppImages.length} page${ppImages.length > 1 ? 's' : ''}...`);
+          setStatus(`Reading ${images.length} page${images.length > 1 ? 's' : ''}... 30-60s`);
           const prompt = `You are a professional horse racing data extractor. The attached image(s) show past performance (PP) data from a DRF or Brisnet program for a specific race.
 
 RACE CONTEXT:
@@ -1324,48 +1327,61 @@ RACE CONTEXT:
 - Distance: ${race.distance}
 - Surface: ${race.surface}
 
-Extract every horse's PP data visible across the images. If you can't confidently read a value, use null. Do not guess.
+Extract every horse's PP data visible across the images. For each horse, extract AS MUCH as you can accurately read. It's better to omit a field than to guess.
 
-Return ONLY JSON:
+Return ONLY valid JSON in this exact structure:
+
 {
   "trackName": "${track.name}",
   "date": "${date}",
   "raceNumber": ${race.raceNumber},
   "horses": [
     {
-      "postPosition": "1", "programNumber": "1", "horseName": "Name",
-      "jockey": "Jockey", "trainer": "Trainer", "morningLine": "10-1",
-      "weight": "126", "medication": "L", "age": 3,
-      "sire": "Sire", "dam": "Dam", "damSire": "Dam sire",
-      "owner": "Owner", "breeder": "Breeder",
+      "postPosition": "1",
+      "programNumber": "1",
+      "horseName": "Horse Name",
+      "jockey": "Jockey Name",
+      "trainer": "Trainer Name",
+      "morningLine": "10-1",
+      "weight": "126",
+      "medication": "L" or "L1" or null,
+      "equipment": "b" or null,
+      "age": 3,
+      "sire": "Sire Name",
+      "dam": "Dam Name",
+      "damSire": "Dam's sire",
+      "owner": "Owner",
+      "breeder": "Breeder (State)",
       "lifetimeRecord": { "starts": 6, "wins": 3, "places": 1, "shows": 1, "earnings": "$832,744", "topBeyer": 98 },
       "pastPerformances": [
         {
           "date": "16Apr11", "track": "CD", "raceNum": 10, "condition": "fst",
-          "distance": "1 1/8", "fractions": [":46","1:11","1:36","1:49"],
+          "distance": "1 1/8", "fractions": [":46", "1:11", "1:36", "1:49"],
           "raceType": "ArkDerby-G1", "beyerFig": 98, "postPosition": 10,
           "runningLine": "10 10-9¾ 9¾ 7-3¾ 3-2 1-nk", "finishPosition": 1,
           "beatenLengths": "nk", "jockey": "Court J K", "weight": 122,
-          "odds": "25.20", "tripComment": "4w gain, late bid, held"
+          "odds": "25.20", "tripComment": "4w gain, late bid, held 13"
         }
       ],
       "workouts": [{ "date": "May3", "track": "CD", "distance": "4F", "surface": "sly", "time": ":52 B", "rank": "24/30", "bullet": false }],
-      "trainerStats": { "dirt": { "runners": 207, "winPct": 0.12, "roi": 1.84 } }
+      "trainerStats": { "dirt": { "runners": 207, "winPct": 0.12, "roi": 1.84 }, "routes": { "runners": 96, "winPct": 0.12, "roi": 2.61 } }
     }
   ],
-  "extractionNotes": "Any issues"
+  "extractionNotes": "Any issues, unreadable areas, etc."
 }
 
-Preserve trip comments verbatim. Return valid JSON only.`;
+RULES:
+- If you can't confidently read a value, use null. Don't guess.
+- Preserve trip comments verbatim.
+- Beyer speed figures are usually the bold number between race type and post position.
+- Extract ALL horses in order.
+- Return valid JSON only.`;
           const { data } = await callClaude({ apiKey, modelId: MODELS.sonnet.id, prompt, imageData, maxTokens: 16000 });
-          data.source = 'photo';
+          data.source = 'photo'; // tag the source
           setStatus('Saving...');
-          if (!savePPData(track.slug, date, race.raceNumber, data)) throw new Error('Local storage full?');
-          onSaved({ type: 'pp', data });
-          resetPpState();
-          setExpandedSection('odds');
-          setProcessing(false);
-          setStatus('');
+          if (!savePPData(track.slug, date, race.raceNumber, data)) throw new Error('Could not save to local storage');
+          onSaved(data);
+          onClose();
         } catch (err) {
           console.error(err);
           setError(`Photo scan failed: ${err.message}`);
@@ -1373,40 +1389,60 @@ Preserve trip comments verbatim. Return valid JSON only.`;
         }
       };
 
-      // Run Brisnet import
       const runBrisnetImport = async () => {
         if (!brisnetPreview) { setError('Select a Brisnet file first'); return; }
-        setProcessing(true); setError(null); setStatus('Importing...');
+        setProcessing(true); setError(null); setStatus('Importing Brisnet data...');
         try {
           const { byRace } = brisnetPreview;
           let savedCount = 0;
-          const racesToSave = importScope === 'all'
-            ? Object.keys(byRace).map(Number)
-            : [race.raceNumber];
-
-          for (const raceNum of racesToSave) {
-            const raceData = byRace[raceNum];
-            if (!raceData) continue;
+          if (importScope === 'all') {
+            // Import all races in the file, matching against allRaces from the race card if available
+            for (const raceNumStr of Object.keys(byRace)) {
+              const raceNum = parseInt(raceNumStr);
+              const raceData = byRace[raceNum];
+              const payload = {
+                source: 'brisnet',
+                trackName: track.name,
+                date,
+                raceNumber: raceNum,
+                raceInfo: {
+                  distance: raceData.distance,
+                  surface: raceData.surface,
+                  raceType: raceData.raceType,
+                  classification: raceData.classification,
+                  purse: raceData.purse,
+                  conditions: raceData.conditions,
+                  trackRecord: raceData.trackRecord
+                },
+                horses: raceData.horses
+              };
+              if (savePPData(track.slug, date, raceNum, payload)) savedCount++;
+            }
+          } else {
+            // Just this race
+            const raceData = byRace[race.raceNumber];
+            if (!raceData) throw new Error(`Race ${race.raceNumber} not found in file. Available races: ${Object.keys(byRace).join(', ')}`);
             const payload = {
               source: 'brisnet',
               trackName: track.name,
               date,
-              raceNumber: raceNum,
+              raceNumber: race.raceNumber,
               raceInfo: {
                 distance: raceData.distance,
                 surface: raceData.surface,
                 raceType: raceData.raceType,
                 classification: raceData.classification,
                 purse: raceData.purse,
-                conditions: raceData.conditions
+                conditions: raceData.conditions,
+                trackRecord: raceData.trackRecord
               },
               horses: raceData.horses
             };
-            if (savePPData(track.slug, date, raceNum, payload)) savedCount++;
+            if (savePPData(track.slug, date, race.raceNumber, payload)) savedCount = 1;
           }
           setStatus(`Saved ${savedCount} race${savedCount !== 1 ? 's' : ''}`);
-          onSaved({ type: 'pp' });
-          setTimeout(() => { setProcessing(false); setExpandedSection('odds'); setStatus(''); }, 600);
+          onSaved(null); // trigger re-scan of localStorage
+          setTimeout(() => onClose(), 600);
         } catch (err) {
           console.error(err);
           setError(`Import failed: ${err.message}`);
@@ -1414,346 +1450,382 @@ Preserve trip comments verbatim. Return valid JSON only.`;
         }
       };
 
-      // Run odds screenshot extraction (vision)
-      const runOddsExtraction = async () => {
-        if (oddsImages.length === 0) { setError('Add a tote screenshot'); return; }
-        setProcessing(true); setError(null); setStatus('Reading tote data...');
-        try {
-          const imageData = await Promise.all(oddsImages.map(async f => ({
-            mediaType: f.type, data: await fileToBase64(f)
-          })));
-          const prompt = `You are a professional horse racing tote-board reader. The attached image(s) show LIVE TOTE/BETTING data — odds, pool percentages, odds movement — from TwinSpires, NYRA Bets, the track's tote board, or a similar source.
-
-RACE CONTEXT:
-- Track: ${track.name}
-- Date: ${date}
-- Race number: ${race.raceNumber}
-
-Extract the current odds for every horse visible. Include odds-movement indicators (up/down arrows) and pool percentage if shown.
-
-Return ONLY JSON:
-{
-  "trackName": "${track.name}",
-  "date": "${date}",
-  "raceNumber": ${race.raceNumber},
-  "source": "TwinSpires" | "NYRA" | "Track Board" | "Other",
-  "horses": [
-    {
-      "postPosition": "1",
-      "horseName": "Name",
-      "currentOdds": "8/5",
-      "morningLine": "2",
-      "poolPercentage": 3,
-      "oddsDirection": "up" | "down" | "steady" | null
-    }
-  ],
-  "captureNotes": "Approximate minutes to post if visible, e.g. 'MTP 27' or 'Live, 5 min to post'"
-}
-
-RULES:
-- currentOdds should be the fractional format shown (e.g. "8/5", "22", "7/2")
-- oddsDirection: "up" = drifting (green up arrow, public backing off), "down" = shortening (red down arrow, money coming in), "steady" = no change
-- If you can't read a value, use null. Do not guess.
-- If the screenshot shows multiple races, only extract Race ${race.raceNumber}.
-- Return valid JSON only.`;
-          const { data } = await callClaude({ apiKey, modelId: MODELS.sonnet.id, prompt, imageData, maxTokens: 4000 });
-
-          // Store odds with timestamp
-          const oddsPayload = {
-            capturedAt: new Date().toISOString(),
-            source: data.source || 'TwinSpires',
-            captureNotes: data.captureNotes,
-            horses: data.horses || []
-          };
-          if (!saveOddsData(track.slug, date, race.raceNumber, oddsPayload)) throw new Error('Local storage full?');
-          onSaved({ type: 'odds', data: oddsPayload });
-          setStatus('Odds saved');
-          setTimeout(() => onClose(), 600);
-        } catch (err) {
-          console.error(err);
-          setError(`Odds scan failed: ${err.message}`);
-          setProcessing(false); setStatus('');
-        }
-      };
-
-      const resetPpState = () => {
-        setPpImages([]); setPpPreviews([]);
-        setBrisnetFile(null); setBrisnetPreview(null);
-      };
-
-      const clearExistingPP = () => {
+      const clearExisting = () => {
         if (!confirm('Delete saved PP data for this race?')) return;
         localStorage.removeItem(ppStorageKey(track.slug, date, race.raceNumber));
-        onSaved({ type: 'pp', cleared: true });
+        onSaved(null);
         onClose();
       };
-
-      const clearExistingOdds = () => {
-        if (!confirm('Delete saved tote odds for this race?')) return;
-        deleteOddsData(track.slug, date, race.raceNumber);
-        onSaved({ type: 'odds', cleared: true });
-        onClose();
-      };
-
-      const oddsAge = existingOdds?.capturedAt
-        ? (() => {
-            const mins = Math.round((Date.now() - new Date(existingOdds.capturedAt).getTime()) / 60000);
-            if (mins < 1) return 'just now';
-            if (mins < 60) return `${mins} min ago`;
-            const hrs = Math.floor(mins / 60);
-            return `${hrs}h ${mins % 60}m ago`;
-          })()
-        : null;
 
       return (
         <div className="modal-backdrop" onClick={(e) => { if (e.target.className === 'modal-backdrop' && !processing) onClose(); }}>
           <div className="modal">
             <div className="modal-header">
               <div>
-                <div className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#fda4af', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Race Data</div>
+                <div className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#6ee7b7', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Load PP Data</div>
                 <div className="modal-title">Race {race.raceNumber} — {track.name}</div>
               </div>
               <button className="modal-close" onClick={onClose} disabled={processing}><IconX /></button>
             </div>
 
-            {/* Section 1: Historical PP */}
-            <div className={`data-section ${expandedSection === 'pp' ? 'expanded' : 'collapsed'}`}>
-              <button
-                className="section-header"
-                onClick={() => !processing && setExpandedSection(expandedSection === 'pp' ? null : 'pp')}
-                disabled={processing}
-              >
-                <div className="section-title">
-                  <span className="section-num">1</span>
-                  <div>
-                    <div className="section-name">Historical PP Data</div>
-                    <div className="section-sub">
-                      {existingPP
-                        ? `✓ Loaded (${existingPP.horses?.length || 0} horses, ${existingPP.source === 'brisnet' ? '📊 Brisnet' : '📷 Photo'})`
-                        : 'Program photos or Brisnet file — for picks'}
-                    </div>
-                  </div>
-                </div>
-                <span className="section-chevron">{expandedSection === 'pp' ? '−' : '+'}</span>
+            {existing && (
+              <div className="scanned-summary">
+                <strong>✓ Already loaded</strong> — {existing.horses?.length || 0} horses ({existing.source === 'brisnet' ? '📊 Brisnet' : '📷 Photo scan'}). Replace below, or <button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExisting}>delete</button>.
+              </div>
+            )}
+
+            {/* Mode toggle */}
+            <div className="mode-toggle">
+              <button className={`mode-btn ${mode === 'photo' ? 'active' : ''}`} onClick={() => { setMode('photo'); setError(null); }} disabled={processing}>
+                <div>📷 Program Photos<span className="mode-sub">Quick · Variable accuracy</span></div>
               </button>
-
-              {expandedSection === 'pp' && (
-                <div className="section-body">
-                  {existingPP && (
-                    <div className="scanned-summary">
-                      <strong>✓ Already loaded</strong> — {existingPP.horses?.length || 0} horses ({existingPP.source === 'brisnet' ? '📊 Brisnet' : '📷 Photo scan'}).
-                      {' '}Replace below, or <button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExistingPP}>delete</button>.
-                    </div>
-                  )}
-
-                  <div className="mode-toggle">
-                    <button className={`mode-btn ${ppMode === 'photo' ? 'active' : ''}`} onClick={() => { setPpMode('photo'); setError(null); }} disabled={processing}>
-                      <div>📷 Program Photos<span className="mode-sub">Free · OCR accuracy varies</span></div>
-                    </button>
-                    <button className={`mode-btn ${ppMode === 'brisnet' ? 'active' : ''}`} onClick={() => { setPpMode('brisnet'); setError(null); }} disabled={processing}>
-                      <div>📊 Brisnet File<span className="mode-sub">~$3 · Reliable</span></div>
-                    </button>
-                  </div>
-
-                  {ppMode === 'photo' && (
-                    <>
-                      <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
-                        Clear photos of the PP page(s) for Race {race.raceNumber}. Multiple close-up shots work better than one wide shot.
-                      </p>
-                      <label
-                        className={`upload-zone ${ppDragging ? 'dragging' : ''}`}
-                        onClick={() => ppFileInputRef.current?.click()}
-                        onDragOver={(e) => { e.preventDefault(); setPpDragging(true); }}
-                        onDragLeave={() => setPpDragging(false)}
-                        onDrop={(e) => { e.preventDefault(); setPpDragging(false); handlePpFiles(e.dataTransfer.files); }}
-                      >
-                        <IconCamera />
-                        <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem' }}>Tap to add photos</div>
-                        <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>{ppImages.length} added</div>
-                        <input ref={ppFileInputRef} type="file" accept="image/*" multiple capture="environment" onChange={(e) => handlePpFiles(e.target.files)} disabled={processing} />
-                      </label>
-                      {ppPreviews.length > 0 && (
-                        <div className="image-preview-grid">
-                          {ppPreviews.map((src, idx) => (
-                            <div key={idx} className="image-preview">
-                              <img src={src} alt={`Page ${idx + 1}`} />
-                              <div className="img-num">{idx + 1}</div>
-                              {!processing && <button className="remove-img" onClick={() => removePpImage(idx)}><IconX /></button>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {!processing && (
-                        <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #6ee7b7, #34d399, #6ee7b7)', marginTop: '0.5rem' }} onClick={runPpPhotoExtraction} disabled={ppImages.length === 0}>
-                          <IconScan /> Extract from {ppImages.length} photo{ppImages.length !== 1 ? 's' : ''}
-                        </button>
-                      )}
-                      <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
-                        Sonnet 4.5 vision · ~$0.05-$0.15 per page
-                      </p>
-                    </>
-                  )}
-
-                  {ppMode === 'brisnet' && (
-                    <>
-                      <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
-                        Upload a Brisnet Single PP file (.csv/.drf) for {track.name} on {date}. One file = whole card. Get one at <a href="https://www.brisnet.com" target="_blank" style={{ color: '#fcd34d' }}>brisnet.com</a> — ~$3/card.
-                      </p>
-                      {!brisnetFile && (
-                        <label
-                          className={`brisnet-zone ${brisnetDragging ? 'dragging' : ''}`}
-                          onClick={() => brisnetInputRef.current?.click()}
-                          onDragOver={(e) => { e.preventDefault(); setBrisnetDragging(true); }}
-                          onDragLeave={() => setBrisnetDragging(false)}
-                          onDrop={(e) => { e.preventDefault(); setBrisnetDragging(false); if (e.dataTransfer.files[0]) handleBrisnetFile(e.dataTransfer.files[0]); }}
-                        >
-                          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#fcd34d' }}>📊 Tap to select Brisnet file</div>
-                          <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>.csv or .drf format</div>
-                          <input ref={brisnetInputRef} type="file" accept=".csv,.drf,.txt,text/*" onChange={(e) => handleBrisnetFile(e.target.files?.[0])} disabled={processing} />
-                        </label>
-                      )}
-                      {brisnetFile && brisnetPreview && (
-                        <div className="brisnet-file-info">
-                          <strong>{brisnetFile.name}</strong>
-                          <div style={{ marginTop: '0.4rem' }}>
-                            Track: <code style={{ color: '#fcd34d' }}>{brisnetPreview.trackCode}</code> · {brisnetPreview.raceCount} race{brisnetPreview.raceCount !== 1 ? 's' : ''} · {brisnetPreview.horseCount} horses
-                          </div>
-                          {brisnetPreview.parseErrors?.length > 0 && (
-                            <div style={{ color: '#fb7185', fontSize: '0.75rem', marginTop: '0.4rem' }}>{brisnetPreview.parseErrors.length} parse warning(s)</div>
-                          )}
-                          <button style={{ background: 'none', border: 'none', color: '#a8a29e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: '0.8rem', marginTop: '0.5rem', padding: 0 }} onClick={() => { setBrisnetFile(null); setBrisnetPreview(null); }}>Pick different file</button>
-                        </div>
-                      )}
-                      {brisnetPreview && brisnetPreview.raceCount > 1 && (
-                        <div>
-                          <label>Import scope</label>
-                          <div className="scope-toggle" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                            <label><input type="radio" checked={importScope === 'all'} onChange={() => setImportScope('all')} disabled={processing} /> Whole card ({brisnetPreview.raceCount} races) — recommended</label>
-                            <label><input type="radio" checked={importScope === 'this'} onChange={() => setImportScope('this')} disabled={processing} /> Just Race {race.raceNumber}</label>
-                          </div>
-                        </div>
-                      )}
-                      {!processing && (
-                        <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #fcd34d, #fbbf24, #fcd34d)', marginTop: '0.5rem' }} onClick={runBrisnetImport} disabled={!brisnetPreview}>
-                          <IconScan /> Import {importScope === 'all' && brisnetPreview ? `${brisnetPreview.raceCount} Races` : `Race ${race.raceNumber}`}
-                        </button>
-                      )}
-                      <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
-                        Parsed locally · No API cost
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
+              <button className={`mode-btn ${mode === 'brisnet' ? 'active' : ''}`} onClick={() => { setMode('brisnet'); setError(null); }} disabled={processing}>
+                <div>📊 Brisnet File<span className="mode-sub">Reliable · $3 at brisnet.com</span></div>
+              </button>
             </div>
 
-            {/* Section 2: Live Tote Odds */}
-            <div className={`data-section ${expandedSection === 'odds' ? 'expanded' : 'collapsed'}`}>
-              <button
-                className="section-header"
-                onClick={() => !processing && setExpandedSection(expandedSection === 'odds' ? null : 'odds')}
-                disabled={processing}
-              >
-                <div className="section-title">
-                  <span className="section-num">2</span>
-                  <div>
-                    <div className="section-name">Live Tote Odds <span style={{ color: '#78716c', fontWeight: 'normal', fontSize: '0.75rem' }}>(optional)</span></div>
-                    <div className="section-sub">
-                      {existingOdds
-                        ? `✓ ${existingOdds.horses?.length || 0} horses, captured ${oddsAge}`
-                        : 'TwinSpires screenshot — enables overlay detection'}
-                    </div>
+            {/* PHOTO MODE */}
+            {mode === 'photo' && (
+              <>
+                <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+                  Take clear photos of the PP page(s) for Race {race.raceNumber}. For accuracy on small text, take close-ups of each section and include them all — Claude will stitch them together.
+                </p>
+
+                <label
+                  className={`upload-zone ${dragging ? 'dragging' : ''}`}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
+                >
+                  <IconCamera />
+                  <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem' }}>Tap to add photos</div>
+                  <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>Camera or gallery · {images.length} added</div>
+                  <input ref={fileInputRef} type="file" accept="image/*" multiple capture="environment" onChange={(e) => handleFiles(e.target.files)} disabled={processing} />
+                </label>
+
+                {previews.length > 0 && (
+                  <div className="image-preview-grid">
+                    {previews.map((src, idx) => (
+                      <div key={idx} className="image-preview">
+                        <img src={src} alt={`Page ${idx + 1}`} />
+                        <div className="img-num">{idx + 1}</div>
+                        {!processing && <button className="remove-img" onClick={() => removeImage(idx)}><IconX /></button>}
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <span className="section-chevron">{expandedSection === 'odds' ? '−' : '+'}</span>
-              </button>
+                )}
 
-              {expandedSection === 'odds' && (
-                <div className="section-body">
-                  {existingOdds && (
-                    <div className="scanned-summary" style={{ background: 'rgba(252, 211, 77, 0.08)', borderColor: 'rgba(252, 211, 77, 0.3)' }}>
-                      <strong style={{ color: '#fcd34d' }}>✓ Odds captured {oddsAge}</strong> from {existingOdds.source}. Odds change up to post time — re-snap closer to post for best accuracy.
-                      {' '}<button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExistingOdds}>delete</button>
-                    </div>
-                  )}
+                {error && <div className="error-box"><IconAlert /><div>{error}</div></div>}
 
-                  <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
-                    Screenshot the TwinSpires <strong>Advanced</strong> tab (or any tote display) showing live odds for this race. The app will extract odds and flag overlays in the analysis.
-                  </p>
+                {processing ? (
+                  <div style={{ textAlign: 'center', padding: '1rem 0', color: '#6ee7b7', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                    <div className="spinner-mint"></div> {status}
+                  </div>
+                ) : (
+                  <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #6ee7b7, #34d399, #6ee7b7)', marginTop: '0.5rem' }} onClick={runPhotoExtraction} disabled={images.length === 0}>
+                    <IconScan /> Extract from {images.length} photo{images.length !== 1 ? 's' : ''}
+                  </button>
+                )}
 
+                <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+                  Uses Sonnet 4.5 vision · ~$0.05-$0.15 per page · Saved locally
+                </p>
+              </>
+            )}
+
+            {/* BRISNET MODE */}
+            {mode === 'brisnet' && (
+              <>
+                <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+                  Upload a Brisnet Single PP file (.csv or .drf) for {track.name} on {date}. One file covers the entire card. Get one at <a href="https://www.brisnet.com/product/data-files/DRS" target="_blank" style={{ color: '#fcd34d' }}>brisnet.com → PP Data (Single)</a> — ~$3 per card.
+                </p>
+
+                {!brisnetFile && (
                   <label
-                    className={`upload-zone ${oddsDragging ? 'dragging' : ''}`}
-                    style={{ borderColor: oddsDragging ? '#fcd34d' : undefined }}
-                    onClick={() => oddsFileInputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setOddsDragging(true); }}
-                    onDragLeave={() => setOddsDragging(false)}
-                    onDrop={(e) => { e.preventDefault(); setOddsDragging(false); handleOddsFiles(e.dataTransfer.files); }}
+                    className={`brisnet-zone ${brisnetDragging ? 'dragging' : ''}`}
+                    onClick={() => brisnetInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setBrisnetDragging(true); }}
+                    onDragLeave={() => setBrisnetDragging(false)}
+                    onDrop={(e) => { e.preventDefault(); setBrisnetDragging(false); if (e.dataTransfer.files[0]) handleBrisnetFile(e.dataTransfer.files[0]); }}
                   >
-                    <IconCamera />
-                    <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem' }}>Tap to add tote screenshot</div>
-                    <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>{oddsImages.length} added</div>
-                    <input ref={oddsFileInputRef} type="file" accept="image/*" multiple onChange={(e) => handleOddsFiles(e.target.files)} disabled={processing} />
+                    <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#fcd34d' }}>📊 Tap to select Brisnet file</div>
+                    <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>.csv or .drf format</div>
+                    <input ref={brisnetInputRef} type="file" accept=".csv,.drf,.txt,text/*" onChange={(e) => handleBrisnetFile(e.target.files?.[0])} disabled={processing} />
                   </label>
+                )}
 
-                  {oddsPreviews.length > 0 && (
-                    <div className="image-preview-grid">
-                      {oddsPreviews.map((src, idx) => (
-                        <div key={idx} className="image-preview">
-                          <img src={src} alt={`Odds ${idx + 1}`} />
-                          <div className="img-num">{idx + 1}</div>
-                          {!processing && <button className="remove-img" onClick={() => removeOddsImage(idx)}><IconX /></button>}
-                        </div>
-                      ))}
+                {brisnetFile && brisnetPreview && (
+                  <div className="brisnet-file-info">
+                    <strong>{brisnetFile.name}</strong>
+                    <div style={{ marginTop: '0.4rem' }}>
+                      Track code: <code style={{ color: '#fcd34d' }}>{brisnetPreview.trackCode}</code> · {brisnetPreview.raceCount} race{brisnetPreview.raceCount !== 1 ? 's' : ''} · {brisnetPreview.horseCount} horses
                     </div>
-                  )}
+                    {brisnetPreview.parseErrors && brisnetPreview.parseErrors.length > 0 && (
+                      <div style={{ color: '#fb7185', fontSize: '0.75rem', marginTop: '0.4rem' }}>{brisnetPreview.parseErrors.length} parse warning{brisnetPreview.parseErrors.length !== 1 ? 's' : ''} (non-fatal)</div>
+                    )}
+                    <button style={{ background: 'none', border: 'none', color: '#a8a29e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: '0.8rem', marginTop: '0.5rem', padding: 0 }} onClick={() => { setBrisnetFile(null); setBrisnetPreview(null); }}>Pick a different file</button>
+                  </div>
+                )}
 
-                  {!processing && (
-                    <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #fcd34d, #fbbf24, #fcd34d)', marginTop: '0.5rem' }} onClick={runOddsExtraction} disabled={oddsImages.length === 0}>
-                      <IconScan /> Extract Odds ({oddsImages.length} image{oddsImages.length !== 1 ? 's' : ''})
-                    </button>
-                  )}
+                {brisnetPreview && brisnetPreview.raceCount > 1 && (
+                  <div>
+                    <label>Import scope</label>
+                    <div className="scope-toggle" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <label>
+                        <input type="radio" checked={importScope === 'all'} onChange={() => setImportScope('all')} disabled={processing} />
+                        Whole card ({brisnetPreview.raceCount} races) — recommended
+                      </label>
+                      <label>
+                        <input type="radio" checked={importScope === 'this'} onChange={() => setImportScope('this')} disabled={processing} />
+                        Just Race {race.raceNumber}
+                      </label>
+                    </div>
+                  </div>
+                )}
 
-                  <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
-                    Sonnet 4.5 vision · ~$0.05 per screenshot · Tote text is big, OCR very reliable
-                  </p>
-                </div>
-              )}
+                {error && <div className="error-box"><IconAlert /><div>{error}</div></div>}
+
+                {processing ? (
+                  <div style={{ textAlign: 'center', padding: '1rem 0', color: '#fcd34d', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                    <div className="spinner-amber"></div> {status}
+                  </div>
+                ) : (
+                  <button
+                    className="primary-btn"
+                    style={{ background: 'linear-gradient(90deg, #fcd34d, #fbbf24, #fcd34d)', marginTop: '0.5rem' }}
+                    onClick={runBrisnetImport}
+                    disabled={!brisnetPreview}
+                  >
+                    <IconScan /> Import {importScope === 'all' && brisnetPreview ? `${brisnetPreview.raceCount} Races` : `Race ${race.raceNumber}`}
+                  </button>
+                )}
+
+                <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+                  Parsed locally · No API cost · Data saved locally
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================================
+    // TOTE SCAN MODAL — captures live odds from TwinSpires screenshot
+    // ============================================================
+    function ToteScanModal({ apiKey, track, date, race, existing, entries, onClose, onSaved }) {
+      const [images, setImages] = useState([]);
+      const [previews, setPreviews] = useState([]);
+      const [processing, setProcessing] = useState(false);
+      const [status, setStatus] = useState('');
+      const [error, setError] = useState(null);
+      const fileInputRef = useRef(null);
+
+      const handleFiles = async (fileList) => {
+        const newFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (newFiles.length === 0) return;
+        const newImages = [...images, ...newFiles];
+        setImages(newImages);
+        const newPreviews = await Promise.all(newImages.map(f => new Promise(res => {
+          const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
+        })));
+        setPreviews(newPreviews);
+      };
+
+      const removeImage = (idx) => {
+        setImages(images.filter((_, i) => i !== idx));
+        setPreviews(previews.filter((_, i) => i !== idx));
+      };
+
+      const runExtraction = async () => {
+        if (images.length === 0) { setError('Add at least one screenshot'); return; }
+        setProcessing(true); setError(null); setStatus('Encoding...');
+
+        try {
+          const imageData = await Promise.all(images.map(async f => ({
+            mediaType: f.type, data: await fileToBase64(f)
+          })));
+
+          setStatus('Reading tote data...');
+
+          const horseList = entries?.entries?.filter(e => !e.scratched).map(e => `${e.postPosition}. ${e.horseName}`).join(', ') || 'unknown';
+
+          const prompt = `You are a racing tote data extractor. The image(s) show a TwinSpires (or similar) live tote screen for a horse race.
+
+RACE CONTEXT:
+- Track: ${track.name}
+- Race: ${race.raceNumber}
+- Expected horses: ${horseList}
+
+Extract the LIVE tote data for each horse. Look for:
+- Live current odds (typically fractional like "8/5" or "5-2" or decimal like "2.5")
+- Pool % (percentage of the win pool, e.g. "3" for 3%)
+- Odds movement indicator (up arrow = drifting longer, down arrow = money coming in, if visible)
+
+Note: TwinSpires "ML" column is MORNING LINE — we don't need that. We want the LIVE odds column (often bold, often blue, often with movement arrows next to it).
+
+Return ONLY valid JSON:
+
+{
+  "trackName": "${track.name}",
+  "raceNumber": ${race.raceNumber},
+  "extractedAt": "describe what the screen said (e.g. '27 MTP' = 27 min to post)",
+  "source": "twinspires" | "nyrabets" | "track_board" | "other",
+  "horses": [
+    {
+      "postPosition": "1",
+      "horseName": "Horse Name",
+      "liveOdds": "8/5",
+      "poolPct": 3,
+      "movement": "up" | "down" | "stable" | null
+    }
+  ],
+  "notes": "Any issues, unreadable areas, or confidence concerns"
+}
+
+RULES:
+- Use the horse name list above to match horses even if the screenshot text is partially unclear
+- If you can't confidently read a horse's odds, use null rather than guess
+- Pool % is the number under the "PL" column or "Pool" header (usually a small integer like 3, 22, 40)
+- Movement arrows: green-up = drifting (less money), red-down = more money
+- Return valid JSON only`;
+
+          const { data } = await callClaude({
+            apiKey, modelId: MODELS.sonnet.id, prompt, imageData, maxTokens: 6000
+          });
+
+          setStatus('Saving...');
+          if (!saveOddsData(track.slug, date, race.raceNumber, data)) throw new Error('Could not save');
+          onSaved(data);
+          onClose();
+        } catch (err) {
+          console.error(err);
+          setError(`Scan failed: ${err.message}`);
+          setProcessing(false); setStatus('');
+        }
+      };
+
+      const clearExisting = () => {
+        if (!confirm('Delete saved tote data for this race?')) return;
+        localStorage.removeItem(oddsStorageKey(track.slug, date, race.raceNumber));
+        onSaved(null);
+        onClose();
+      };
+
+      return (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target.className === 'modal-backdrop' && !processing) onClose(); }}>
+          <div className="modal">
+            <div className="modal-header">
+              <div>
+                <div className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#c4b5fd', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Capture Live Odds</div>
+                <div className="modal-title">Race {race.raceNumber} — Tote Snapshot</div>
+              </div>
+              <button className="modal-close" onClick={onClose} disabled={processing}><IconX /></button>
             </div>
 
-            {processing && (
-              <div style={{ textAlign: 'center', padding: '1rem 0', color: '#6ee7b7', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                <div className="spinner-mint"></div> {status}
+            {existing && (
+              <div className="scanned-summary" style={{ background: 'rgba(168, 85, 247, 0.08)', borderColor: 'rgba(168, 85, 247, 0.3)' }}>
+                <strong style={{ color: '#c4b5fd' }}>✓ Odds captured</strong> — {existing.horses?.length || 0} horses. Replace below or <button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExisting}>delete</button>.
+              </div>
+            )}
+
+            <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+              Screenshot the <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>TwinSpires Advanced tab</strong> (or any live tote board) for Race {race.raceNumber}. Capture close to post time — odds move right until post. Live odds + pool % are what we need; ignore the Speed/Class/Pace tabs.
+            </p>
+
+            <label
+              className="upload-zone"
+              onClick={() => fileInputRef.current?.click()}
+              style={{ borderColor: 'rgba(168, 85, 247, 0.4)' }}
+            >
+              <IconCamera />
+              <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#c4b5fd' }}>Tap to add screenshot</div>
+              <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>One screenshot usually enough · {images.length} added</div>
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={(e) => handleFiles(e.target.files)} disabled={processing} />
+            </label>
+
+            {previews.length > 0 && (
+              <div className="image-preview-grid">
+                {previews.map((src, idx) => (
+                  <div key={idx} className="image-preview">
+                    <img src={src} alt={`Screenshot ${idx + 1}`} />
+                    <div className="img-num">{idx + 1}</div>
+                    {!processing && <button className="remove-img" onClick={() => removeImage(idx)}><IconX /></button>}
+                  </div>
+                ))}
               </div>
             )}
 
             {error && <div className="error-box"><IconAlert /><div>{error}</div></div>}
+
+            {processing ? (
+              <div style={{ textAlign: 'center', padding: '1rem 0', color: '#c4b5fd', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <div className="spinner-mint" style={{ borderTopColor: '#c4b5fd' }}></div> {status}
+              </div>
+            ) : (
+              <button
+                className="primary-btn"
+                style={{ background: 'linear-gradient(90deg, #c4b5fd, #a78bfa, #c4b5fd)', marginTop: '0.5rem' }}
+                onClick={runExtraction}
+                disabled={images.length === 0}
+              >
+                <IconTote /> Extract Tote Data
+              </button>
+            )}
+
+            <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+              ~$0.05 per scan · Enables overlay detection
+            </p>
           </div>
         </div>
       );
     }
 
     function App() {
-      const [view, setView] = useState('home');
+      // v7.1: Restore navigation state from last session
+      // Rules: (1) if saved date is in the past, snap to today and clear track/race
+      //        (2) otherwise restore exactly where we were
+      const savedNav = (() => {
+        const s = loadNavState();
+        if (!s) return null;
+        const today = formatDate(new Date());
+        if (s.date && s.date < today) {
+          return { view: 'home', date: today, trackSlug: null, trackName: null, raceNumber: null };
+        }
+        return s;
+      })();
+
+      const [view, setView] = useState(savedNav?.view || 'home');
       const [apiKey, setApiKey] = useState(() => localStorage.getItem('postTime_apiKey') || '');
-      const [selectedDate, setSelectedDate] = useState(() => formatDate(new Date()));
+      const [selectedDate, setSelectedDate] = useState(savedNav?.date || formatDate(new Date()));
       const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('postTime_model') || 'sonnet');
 
       const [tracksForDay, setTracksForDay] = useState(null);
-      const [selectedTrack, setSelectedTrack] = useState(null);
+      // Hydrate selectedTrack stub from saved nav so downstream logic can fetch race card
+      const [selectedTrack, setSelectedTrack] = useState(
+        savedNav?.trackSlug ? { slug: savedNav.trackSlug, name: savedNav.trackName || savedNav.trackSlug } : null
+      );
       const [raceCard, setRaceCard] = useState(null);
-      const [selectedRace, setSelectedRace] = useState(null);
+      const [selectedRace, setSelectedRace] = useState(
+        savedNav?.raceNumber ? { raceNumber: savedNav.raceNumber } : null
+      );
       const [entries, setEntries] = useState(null);
       const [horses, setHorses] = useState([]);
       const [conditions, setConditions] = useState(null);
       const [conditionsLoading, setConditionsLoading] = useState(false);
       const [analysis, setAnalysis] = useState(null);
+      const [analysisTimestamp, setAnalysisTimestamp] = useState(null);
       const [showReasoning, setShowReasoning] = useState(false);
 
-      // Scan state
+      // Scan state (historical PP)
       const [scannedRaces, setScannedRaces] = useState(new Map());
       const [scanModalRace, setScanModalRace] = useState(null);
       const [currentPP, setCurrentPP] = useState(null);
+
+      // v7: Tote odds state (live)
       const [currentOdds, setCurrentOdds] = useState(null);
+      const [toteModalRace, setToteModalRace] = useState(null);
 
       const [loading, setLoading] = useState(false);
       const [error, setError] = useState(null);
@@ -1764,16 +1836,133 @@ RULES:
       useEffect(() => { if (apiKey) localStorage.setItem('postTime_apiKey', apiKey); }, [apiKey]);
       useEffect(() => { localStorage.setItem('postTime_model', selectedModel); }, [selectedModel]);
 
+      // v7.1: Persist navigation state on every transition
+      useEffect(() => {
+        saveNavState({
+          view,
+          date: selectedDate,
+          trackSlug: selectedTrack?.slug || null,
+          trackName: selectedTrack?.name || null,
+          raceNumber: selectedRace?.raceNumber || null
+        });
+      }, [view, selectedDate, selectedTrack, selectedRace]);
+
+      // v7.1: Load saved analysis (+ its supporting context) when entering analysis view
+      useEffect(() => {
+        if (view === 'analysis' && selectedTrack?.slug && selectedRace?.raceNumber && !analysis) {
+          const saved = loadAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
+          if (saved) {
+            setAnalysis(saved.analysis);
+            if (saved.conditions) setConditions(saved.conditions);
+            if (saved.entries) setEntries(saved.entries);
+            if (saved.horses) setHorses(saved.horses);
+            if (saved.raceCard) setRaceCard(saved.raceCard);
+            // Hydrate track/race fully if we only had stubs
+            if (saved.selectedTrack && !selectedTrack.firstPost) setSelectedTrack(saved.selectedTrack);
+            if (saved.selectedRace && !selectedRace.distance) setSelectedRace(saved.selectedRace);
+            setAnalysisTimestamp(saved.timestamp);
+          }
+        }
+      }, [view, selectedTrack, selectedRace, selectedDate]);
+
+      // v7.1: Browser history integration — back button walks up the view tree and closes modals
+      useEffect(() => {
+        // Seed history with a known state on first load
+        if (!window.history.state || !window.history.state.ptView) {
+          window.history.replaceState({ ptView: view }, '', window.location.pathname);
+        }
+      }, []);
+
+      // Push history entry on every view change (except initial)
+      const prevViewRef = useRef(view);
+      useEffect(() => {
+        if (prevViewRef.current !== view) {
+          const currentState = window.history.state;
+          if (currentState?.ptView !== view) {
+            window.history.pushState({ ptView: view }, '', window.location.pathname);
+          }
+          prevViewRef.current = view;
+        }
+      }, [view]);
+
+      // v7.1: When a modal opens, push a marker entry so the back button closes it
+      const modalOpen = !!(scanModalRace || toteModalRace);
+      const prevModalRef = useRef(false);
+      useEffect(() => {
+        if (modalOpen && !prevModalRef.current) {
+          window.history.pushState({ ptView: view, ptModal: true }, '', window.location.pathname);
+        }
+        prevModalRef.current = modalOpen;
+      }, [modalOpen]);
+
+      // Single popstate handler — close modal first if open, else navigate to the new view
+      useEffect(() => {
+        const onPopState = (e) => {
+          if (scanModalRace || toteModalRace) {
+            setScanModalRace(null);
+            setToteModalRace(null);
+            return;
+          }
+          const target = e.state?.ptView;
+          if (target && target !== view) {
+            setView(target);
+          } else if (!target) {
+            setView('home');
+          }
+        };
+        window.addEventListener('popstate', onPopState);
+        return () => window.removeEventListener('popstate', onPopState);
+      }, [view, scanModalRace, toteModalRace]);
+
+      // v7.1: Auto-fetch supporting data when restoring a deep view on reopen
+      // (only runs once per reopen — triggered by view/selectedTrack/selectedRace being set from savedNav)
+      const autoFetchedRef = useRef(false);
+      useEffect(() => {
+        if (autoFetchedRef.current) return;
+        if (!apiKey) return; // need API key
+        const needsTracks = (view === 'tracks' || view === 'races' || view === 'entries' || view === 'analysis') && !tracksForDay;
+        const needsRaceCard = (view === 'races' || view === 'entries' || view === 'analysis') && selectedTrack?.slug && !raceCard;
+        const needsEntries = view === 'entries' && selectedTrack?.slug && selectedRace?.raceNumber && !entries;
+
+        // For analysis view: if saved analysis exists in storage, skip fetching entries (the saved data has it)
+        if (view === 'analysis' && selectedTrack?.slug && selectedRace?.raceNumber) {
+          const saved = loadAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
+          if (saved) {
+            // Analysis data exists, the hydrate useEffect will populate. Don't auto-fetch.
+            autoFetchedRef.current = true;
+            return;
+          } else {
+            // Analysis was lost — fall back to entries view (don't auto-run analysis, let user click Re-run / Deep Dive)
+            setView('entries');
+            return;
+          }
+        }
+
+        if (needsEntries) {
+          autoFetchedRef.current = true;
+          // Call fetchEntries with current selectedRace stub
+          fetchEntries({ raceNumber: selectedRace.raceNumber, ...selectedRace });
+        } else if (needsRaceCard) {
+          autoFetchedRef.current = true;
+          fetchRaceCard(selectedTrack);
+        } else if (needsTracks) {
+          autoFetchedRef.current = true;
+          fetchTracksForDay();
+        }
+      }, [view, apiKey, tracksForDay, raceCard, entries, selectedTrack, selectedRace, selectedDate]);
+
       // When track changes, refresh the set of races that have been scanned
       useEffect(() => {
         if (selectedTrack) setScannedRaces(getRacesWithPP(selectedTrack.slug, selectedDate));
       }, [selectedTrack, selectedDate]);
 
-      // When a race is selected, load its PP data and live odds if any
+      // When a race is selected, load its PP data and odds if any
       useEffect(() => {
         if (selectedTrack && selectedRace) {
-          setCurrentPP(loadPPData(selectedTrack.slug, selectedDate, selectedRace.raceNumber));
-          setCurrentOdds(loadOddsData(selectedTrack.slug, selectedDate, selectedRace.raceNumber));
+          const pp = loadPPData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
+          setCurrentPP(pp);
+          const odds = loadOddsData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
+          setCurrentOdds(odds);
         } else {
           setCurrentPP(null);
           setCurrentOdds(null);
@@ -2049,7 +2238,7 @@ Return valid JSON only. Use null where info unavailable.`;
   Trip note: ${h.tripNote || 'none'}`
           ).join('\n\n');
 
-          const synthPrompt = `You are a professional horse racing handicapper synthesizing deep research into picks. You will follow a rigorous PACE-SCHOOL approach to projection.
+          const synthPrompt = `You are a professional horse racing handicapper synthesizing deep research into picks. You will follow a rigorous PACE-SCHOOL approach to projection AND output calibrated win probabilities for every horse.
 
 RACE: ${selectedRace.raceName} (Race ${selectedRace.raceNumber})
 TRACK: ${selectedTrack.name}, ${selectedDate}
@@ -2078,7 +2267,16 @@ Step 7. Pick Win/Place/Show/Longshot. Win = best pace+figure combo. Longshot = v
 
 Step 8. Exotic structure. Build exactas/tris/supers around pace-suited contenders; use trip-bad-luck and pace-suited bombs underneath for value.
 
-Step 9. **Probability distribution.** Assign each horse a win probability (0.0-1.0). These must sum to approximately 1.0 across the field. Calibration guidelines: an obvious standout in a small field might be 40-50%; a chalky favorite in a competitive race 25-35%; a solid contender 10-20%; a live longshot 5-10%; a true bomb 2-4%; a pace-compromised also-ran 1-2%. NEVER assign every horse ~10% just to be safe — that's useless. Differentiate. If you're uncertain, spread probability more evenly but do not flatten entirely.
+Step 9. CALIBRATED WIN PROBABILITIES. For every horse in the field (all ${validHorses.length}), output an implied probability of winning (0.0 to 1.0). CRITICAL CALIBRATION RULES:
+  - Probabilities across the field MUST sum to approximately 1.0 (between 0.95 and 1.05).
+  - A typical morning-line favorite in a competitive race wins ~25-35% of the time (prob 0.25-0.35).
+  - A second choice is usually ~15-22%.
+  - A third choice is usually ~10-15%.
+  - Mid-pack horses are 5-10%.
+  - Bombs and throwouts are 1-5%.
+  - Do NOT output a 10-horse race where everyone is 10%. That's a non-answer.
+  - Do NOT output a 10-horse race where the favorite is 70%. Real races have upset potential.
+  - Factor in: speed figures, pace suitability, trip angles, class, trainer angles, form trajectory, distance/surface fit.
 
 Return ONLY JSON:
 
@@ -2093,9 +2291,10 @@ Return ONLY JSON:
   "paceScenario": "Human-readable pace summary (3-4 sentences)",
   "trackBias": "How today's bias affects this race (1-2 sentences)",
   "tripAngles": "Any horses flagged for trip bad luck and what it means (1-2 sentences)",
-  "probabilityDistribution": [
-    { "postPosition": "1", "name": "Horse A", "winProbability": 0.25 },
-    { "postPosition": "2", "name": "Horse B", "winProbability": 0.18 }
+  "fieldProbabilities": [
+    { "postPosition": "1", "name": "Horse Name", "winProbability": 0.28 },
+    { "postPosition": "2", "name": "Horse Name", "winProbability": 0.15 }
+    // ... EVERY horse in the field, probabilities summing to ~1.0
   ],
   "topPicks": {
     "win": { "postPosition": "X", "name": "Name", "reasoning": "2-3 sentences tying pace + figures + bias" },
@@ -2112,7 +2311,7 @@ Return ONLY JSON:
   "summary": "3-4 sentence final take"
 }
 
-Return valid JSON only. Your probabilityDistribution array MUST include every horse in the field, and the winProbability values MUST sum to approximately 1.0 (between 0.95 and 1.05).`;
+Return valid JSON only.`;
 
           const { data: synthData } = await callClaude({ apiKey, modelId: model.id, prompt: synthPrompt, maxTokens: 3000 });
 
@@ -2138,6 +2337,13 @@ Return valid JSON only. Your probabilityDistribution array MUST include every ho
             }))
           };
           setAnalysis(fullAnalysis);
+          // v7.1: persist analysis with full context so it survives app close
+          const nowIso = new Date().toISOString();
+          setAnalysisTimestamp(nowIso);
+          if (selectedTrack && selectedRace) {
+            saveAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber,
+              fullAnalysis, conditions, entries, horses, raceCard, selectedTrack, selectedRace);
+          }
           setView('analysis');
         } catch (err) {
           console.error(err);
@@ -2166,78 +2372,107 @@ Trifecta: ${analysis.exotics.trifecta}`;
         setTimeout(() => setCopied(false), 2000);
       };
 
-      const goHome = () => { setView('home'); setError(null); };
-      const goTracks = () => { setView('tracks'); setError(null); setSelectedTrack(null); setRaceCard(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); };
-      const goRaces = () => { setView('races'); setError(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); };
-      const goEntries = () => { setView('entries'); setError(null); setAnalysis(null); };
+      const goHome = () => { setView('home'); setError(null); setAnalysisTimestamp(null); };
+      const goTracks = () => { setView('tracks'); setError(null); setSelectedTrack(null); setRaceCard(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); setAnalysisTimestamp(null); };
+      const goRaces = () => { setView('races'); setError(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); setAnalysisTimestamp(null); };
+      const goEntries = () => { setView('entries'); setError(null); setAnalysis(null); setAnalysisTimestamp(null); };
 
       const confidenceColor = (c) => c >= 8 ? '#fda4af' : c >= 6 ? '#fcd34d' : c >= 4 ? '#a8a29e' : '#78716c';
+
+      // v7: Compute overlays from analysis + live odds
+      // Returns { rows: [{post, name, aiProb, toteProb, toteOdds, ratio, tier, isUnder}], summary }
+      const computeOverlays = (analysis, odds) => {
+        if (!analysis?.fieldProbabilities || !odds?.horses) return null;
+
+        // Build odds lookup by post position (normalize as string)
+        const oddsByPost = {};
+        odds.horses.forEach(h => {
+          if (h.postPosition !== null && h.postPosition !== undefined) {
+            oddsByPost[String(h.postPosition)] = h;
+          }
+        });
+
+        // Normalize tote probabilities — raw sum will be >1.0 due to track take (~15-25%)
+        const rawToteImplied = {};
+        let toteSum = 0;
+        odds.horses.forEach(h => {
+          const ip = oddsToImplied(h.liveOdds);
+          if (ip !== null) {
+            rawToteImplied[String(h.postPosition)] = ip;
+            toteSum += ip;
+          }
+        });
+        // If we got a reasonable sum, normalize. Otherwise use raw.
+        const toteFactor = (toteSum > 1.05 && toteSum < 1.5) ? (1 / toteSum) : 1;
+
+        // Normalize AI probs (in case they don't quite sum to 1)
+        const aiSum = analysis.fieldProbabilities.reduce((s, h) => s + (h.winProbability || 0), 0);
+        const aiFactor = aiSum > 0.01 ? (1 / aiSum) : 1;
+
+        const rows = analysis.fieldProbabilities.map(h => {
+          const post = String(h.postPosition);
+          const aiProb = (h.winProbability || 0) * aiFactor;
+          const toteEntry = oddsByPost[post];
+          const rawTote = rawToteImplied[post];
+          const toteProb = rawTote != null ? rawTote * toteFactor : null;
+          const toteOdds = toteEntry?.liveOdds || null;
+          const ratio = toteProb != null && toteProb > 0 ? aiProb / toteProb : null;
+          let tier = null;
+          let isUnder = false;
+          if (ratio != null) {
+            if (ratio >= 2.0) tier = 'big';
+            else if (ratio >= 1.5) tier = 'mid';
+            else if (ratio >= 1.25) tier = 'small';
+            else if (ratio < 0.75) { tier = 'under'; isUnder = true; }
+          }
+          return {
+            postPosition: post,
+            name: h.name,
+            aiProb, toteProb, toteOdds, ratio, tier, isUnder,
+            poolPct: toteEntry?.poolPct,
+            movement: toteEntry?.movement,
+            missing: toteEntry == null || toteEntry.liveOdds == null
+          };
+        });
+
+        const overlays = rows.filter(r => r.tier && !r.isUnder).sort((a, b) => b.ratio - a.ratio);
+        const underlays = rows.filter(r => r.isUnder).sort((a, b) => a.ratio - b.ratio);
+        const missingOdds = rows.filter(r => r.missing).length;
+
+        // Check if top pick is an underlay (warning sign)
+        const topPickPost = analysis.topPicks?.win?.postPosition;
+        const topPickRow = rows.find(r => r.postPosition === String(topPickPost));
+        const topPickIsUnder = topPickRow?.isUnder;
+
+        return {
+          rows: rows.sort((a, b) => b.aiProb - a.aiProb),
+          overlays,
+          underlays,
+          missingOdds,
+          toteTakeoutEstimate: toteSum > 0 ? Math.round((toteSum - 1) * 100) : null,
+          topPickPost: topPickPost ? String(topPickPost) : null,
+          topPickIsUnder
+        };
+      };
 
       const prettyDate = new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
       const currentModel = MODELS[selectedModel];
 
-      // Bankroll for Kelly sizing (persisted)
-      const [bankroll, setBankroll] = useState(() => parseFloat(localStorage.getItem('postTime_bankroll') || '100') || 100);
-      useEffect(() => { localStorage.setItem('postTime_bankroll', String(bankroll)); }, [bankroll]);
-
-      // Compute overlays when we have BOTH analysis probabilities AND live odds
-      const overlays = (() => {
-        if (!analysis?.probabilityDistribution || !currentOdds?.horses) return null;
-        const aiByPost = new Map();
-        for (const p of analysis.probabilityDistribution) {
-          if (p.postPosition) aiByPost.set(String(p.postPosition), p);
-        }
-        const rows = [];
-        for (const oh of currentOdds.horses) {
-          const post = String(oh.postPosition);
-          const ai = aiByPost.get(post);
-          if (!ai) continue;
-          const decimalOdds = parseOdds(oh.currentOdds);
-          if (decimalOdds == null) continue;
-          rows.push({
-            postPosition: post,
-            name: ai.name || oh.horseName,
-            currentOddsText: oh.currentOdds,
-            decimalOdds,
-            mlOddsText: oh.morningLine,
-            poolPercentage: oh.poolPercentage,
-            oddsDirection: oh.oddsDirection,
-            aiProbRaw: ai.winProbability,
-            toteImpliedRaw: computeImpliedFromOdds(decimalOdds)
-          });
-        }
-        if (rows.length === 0) return null;
-        // Normalize both sides so they sum to 1.0 (strips takeout from tote)
-        const aiNorm = normalizeProbabilities(rows.map(r => r.aiProbRaw));
-        const toteNorm = normalizeProbabilities(rows.map(r => r.toteImpliedRaw));
-        rows.forEach((r, i) => {
-          r.aiProb = aiNorm[i];
-          r.toteProb = toteNorm[i];
-          r.edge = r.aiProb - r.toteProb;
-          r.overlay = classifyOverlay(r.aiProb, r.toteProb);
-          r.kelly = computeKelly(r.aiProb, r.decimalOdds, bankroll, 0.25);
-        });
-        // Sort by overlay ratio descending so the best bets surface first
-        rows.sort((a, b) => (b.overlay?.ratio || 0) - (a.overlay?.ratio || 0));
-        return rows;
-      })();
-
-
       const openScanModal = (race) => { setScanModalRace(race); };
-      const handleScanSaved = (event) => {
-        // event: { type: 'pp' | 'odds', data?, cleared? }
+      const handleScanSaved = (newPP) => {
         if (selectedTrack) setScannedRaces(getRacesWithPP(selectedTrack.slug, selectedDate));
-        if (selectedRace && scanModalRace && scanModalRace.raceNumber === selectedRace.raceNumber) {
-          if (event.type === 'pp') {
-            setCurrentPP(event.cleared ? null : (event.data || loadPPData(selectedTrack.slug, selectedDate, selectedRace.raceNumber)));
-          } else if (event.type === 'odds') {
-            setCurrentOdds(event.cleared ? null : (event.data || loadOddsData(selectedTrack.slug, selectedDate, selectedRace.raceNumber)));
-          }
-        }
+        if (selectedRace && scanModalRace && scanModalRace.raceNumber === selectedRace.raceNumber) setCurrentPP(newPP);
       };
 
-      const scanExistingPP = scanModalRace ? loadPPData(selectedTrack?.slug, selectedDate, scanModalRace.raceNumber) : null;
-      const scanExistingOdds = scanModalRace ? loadOddsData(selectedTrack?.slug, selectedDate, scanModalRace.raceNumber) : null;
+      const scanExisting = scanModalRace ? loadPPData(selectedTrack?.slug, selectedDate, scanModalRace.raceNumber) : null;
+      const toteExisting = toteModalRace ? loadOddsData(selectedTrack?.slug, selectedDate, toteModalRace.raceNumber) : null;
+
+      const openToteModal = (race) => setToteModalRace(race);
+      const handleToteSaved = (newOdds) => {
+        if (selectedRace && toteModalRace && toteModalRace.raceNumber === selectedRace.raceNumber) {
+          setCurrentOdds(newOdds);
+        }
+      };
 
       return (
         <>
@@ -2247,17 +2482,29 @@ Trifecta: ${analysis.exotics.trifecta}`;
               track={selectedTrack}
               date={selectedDate}
               race={scanModalRace}
-              existingPP={scanExistingPP}
-              existingOdds={scanExistingOdds}
+              existing={scanExisting}
               onClose={() => setScanModalRace(null)}
               onSaved={handleScanSaved}
             />
           )}
 
+          {toteModalRace && selectedTrack && (
+            <ToteScanModal
+              apiKey={apiKey}
+              track={selectedTrack}
+              date={selectedDate}
+              race={toteModalRace}
+              existing={toteExisting}
+              entries={entries}
+              onClose={() => setToteModalRace(null)}
+              onSaved={handleToteSaved}
+            />
+          )}
+
           <header>
-            <div className="kicker"><IconFlower /><span>AI Handicapper · Scan · Deep Dive · Pace</span></div>
+            <div className="kicker"><IconFlower /><span>AI Handicapper · PP Data · Live Tote · Overlays</span></div>
             <h1>Post <em>Time</em><span className="sub">AI Handicapper</span></h1>
-            <p className="tagline">Scan the program. Deep-dive every horse. Pace-school projection. Track bias included.</p>
+            <p className="tagline">Load the past performances. Capture the tote. Find the overlays.</p>
           </header>
 
           {view !== 'home' && (
@@ -2285,7 +2532,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 </div>
               )}
               <div className="info-box">
-                <strong style={{ color: '#6ee7b7', fontStyle: 'normal' }}>New:</strong> Scan your Churchill/DRF/Brisnet program at the track — app extracts Beyer figures, running lines, trip comments, workouts, trainer stats. Data saves locally so you scan once per race and use all day. Deep-dive analysis now includes rigorous pace projection + trip-bad-luck flagging.
+                <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>New in v7:</strong> Live tote integration. Screenshot your TwinSpires Advanced tab near post time and the app compares the crowd's implied probabilities to the AI's — highlighting overlays (bets with positive expected value) and underlays (horses the crowd loves but the AI doesn't). Data path is flexible: Brisnet file (best), program photos, or skip and use web search.
               </div>
               <section>
                 <h2 style={{ marginBottom: '1rem' }}>Pick a Race Day</h2>
@@ -2382,13 +2629,47 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 onClick={() => openScanModal(selectedRace)}
               >
                 <IconScan />
-                <span>
-                  {currentPP ? <>{currentPP.source === 'brisnet' ? '📊' : '📷'} PP</> : '○ PP'}
-                  {' · '}
-                  {currentOdds ? <>🎰 Odds ({currentOdds.horses?.length || 0})</> : '○ Odds'}
-                  {' — '}{(currentPP || currentOdds) ? 'Manage' : 'Add race data'}
-                </span>
+                {currentPP ? (
+                  <>
+                    {currentPP.source === 'brisnet' ? '📊' : '📷'} PP data loaded ({currentPP.horses?.length || 0} horses) — Replace
+                  </>
+                ) : 'Load Past Performances'}
               </button>
+
+              <div className={`tote-panel ${currentOdds ? 'loaded' : ''}`}>
+                <div className="tote-header">
+                  <span className="tote-title"><IconTote /> Live Tote Snapshot</span>
+                  <button className="tote-action" onClick={() => openToteModal(selectedRace)}>
+                    {currentOdds ? 'Replace' : '+ Capture'}
+                  </button>
+                </div>
+                {!currentOdds && (
+                  <div className="tote-status">
+                    Optional · Enables overlay detection. Screenshot TwinSpires Advanced tab close to post.
+                  </div>
+                )}
+                {currentOdds && (() => {
+                  const fresh = getOddsFreshness(currentOdds);
+                  return (
+                    <>
+                      <div className={`tote-status ${fresh.veryStale ? 'very-stale' : fresh.stale ? 'stale' : 'fresh'}`}>
+                        {fresh.ageMin === 0 ? 'Just captured' : `${fresh.ageMin} min ago`}
+                        {fresh.veryStale ? ' — very stale, re-capture for accurate overlays' : fresh.stale ? ' — getting stale, consider refresh' : ' — fresh'}
+                        {currentOdds.extractedAt ? ` · ${currentOdds.extractedAt}` : ''}
+                      </div>
+                      <div className="tote-odds-list">
+                        {(currentOdds.horses || []).map((h, idx) => (
+                          <span key={idx} className="tote-odds-item">
+                            <span className="post">{h.postPosition}.</span>
+                            <span className="odds">{h.liveOdds || '?'}</span>
+                            {h.poolPct != null ? <span className="pool">· {h.poolPct}%</span> : null}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
 
               <div className="conditions-panel">
                 <div className="conditions-header">
@@ -2482,6 +2763,33 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 </div>
               </div>
 
+              {/* v7.1: Analysis age + Re-run */}
+              {analysisTimestamp && (() => {
+                const age = formatAge(analysisTimestamp);
+                const analysisDate = analysisTimestamp.slice(0, 10);
+                const isDifferentDay = analysisDate !== selectedDate;
+                const isOld = isDifferentDay || (Date.now() - new Date(analysisTimestamp).getTime() > 3 * 60 * 60 * 1000);
+                return (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+                    padding: '0.6rem 0.9rem', marginBottom: '1rem',
+                    background: isOld ? 'rgba(252, 211, 77, 0.08)' : 'rgba(28, 25, 23, 0.4)',
+                    border: '1px solid ' + (isOld ? 'rgba(252, 211, 77, 0.3)' : '#292524'),
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{ fontSize: '0.8rem', color: isOld ? '#fcd34d' : '#a8a29e' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', letterSpacing: '0.15em', textTransform: 'uppercase', marginRight: '0.5rem' }}>Analysis</span>
+                      <span>{age}</span>
+                      {isDifferentDay && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic' }}>· from a prior day, likely stale</span>}
+                      {!isDifferentDay && isOld && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic' }}>· conditions may have changed</span>}
+                    </div>
+                    <button className="ghost-btn" onClick={() => { setAnalysis(null); setAnalysisTimestamp(null); runAnalysis(); }} disabled={loading}>
+                      <IconRefresh /> Re-run
+                    </button>
+                  </div>
+                );
+              })()}
+
               {conditions && (
                 <div className="conditions-panel" style={{ marginBottom: '1.5rem' }}>
                   <div className="conditions-title" style={{ marginBottom: '0.5rem' }}>Conditions Considered</div>
@@ -2491,6 +2799,104 @@ Trifecta: ${analysis.exotics.trifecta}`;
                   </div>
                 </div>
               )}
+
+              {/* v7: Overlay Detection Panel */}
+              {(() => {
+                if (!currentOdds) {
+                  // No odds captured — show a soft prompt
+                  return (
+                    <div className="overlay-panel" style={{ background: 'rgba(28, 25, 23, 0.4)', borderColor: '#292524' }}>
+                      <div className="overlay-header">
+                        <div className="overlay-title"><span className="icon-box"><IconTarget /></span> Value Analysis</div>
+                      </div>
+                      <div style={{ color: '#a8a29e', fontSize: '0.875rem', fontStyle: 'italic', marginBottom: '0.75rem' }}>
+                        Capture live tote odds to see overlay detection. Horses where the AI's probability exceeds the crowd's implied probability are bettable overlays.
+                      </div>
+                      <button className="tote-action" style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.4)' }} onClick={() => openToteModal(selectedRace)}>
+                        + Capture Tote Screenshot
+                      </button>
+                    </div>
+                  );
+                }
+                const overlay = computeOverlays(analysis, currentOdds);
+                if (!overlay) {
+                  return (
+                    <div className="overlay-panel">
+                      <div className="overlay-header">
+                        <div className="overlay-title"><span className="icon-box"><IconTarget /></span> Value Analysis</div>
+                      </div>
+                      <div className="overlay-empty">Could not compute overlays — analysis missing probabilities. Try re-running analysis.</div>
+                    </div>
+                  );
+                }
+                const fresh = getOddsFreshness(currentOdds);
+                return (
+                  <div className="overlay-panel">
+                    <div className="overlay-header">
+                      <div className="overlay-title"><span className="icon-box"><IconTarget /></span> Overlay Detection</div>
+                    </div>
+                    <div className="overlay-subtitle">
+                      Horses where AI probability ≥ 1.25× tote implied probability. Based on live odds {fresh.ageMin === 0 ? 'just captured' : `${fresh.ageMin} min ago`}{fresh.veryStale ? ' — ⚠ very stale' : fresh.stale ? ' — ⚠ getting stale' : ''}.
+                    </div>
+
+                    {overlay.topPickIsUnder && (
+                      <div style={{ color: '#fb7185', fontSize: '0.85rem', fontStyle: 'italic', marginBottom: '0.75rem', paddingLeft: '0.5rem', borderLeft: '2px solid #fb7185' }}>
+                        ⚠ The AI's win pick is an underlay — market disagrees with the analysis. Proceed with caution.
+                      </div>
+                    )}
+
+                    {overlay.overlays.length === 0 && overlay.underlays.length === 0 && (
+                      <div className="overlay-empty">No meaningful overlays or underlays detected. AI and market roughly agree.</div>
+                    )}
+
+                    {overlay.overlays.length > 0 && (
+                      <>
+                        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', color: '#6ee7b7', textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                          ✦ Overlays ({overlay.overlays.length})
+                        </div>
+                        <div className="overlay-grid">
+                          {overlay.overlays.map((row, idx) => (
+                            <div key={idx} className={`overlay-row ${row.tier}`}>
+                              <div className="post">{row.postPosition}</div>
+                              <div className="name">{row.name}</div>
+                              <div className="odds">{row.toteOdds}</div>
+                              <div className="prob">AI {(row.aiProb * 100).toFixed(0)}% / Tote {(row.toteProb * 100).toFixed(0)}%</div>
+                              <div className="tag">{row.ratio.toFixed(2)}×</div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {overlay.underlays.length > 0 && (
+                      <>
+                        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', color: '#a8a29e', textTransform: 'uppercase', margin: '1rem 0 0.4rem' }}>
+                          ✕ Underlays — crowd likes more than AI ({overlay.underlays.length})
+                        </div>
+                        <div className="overlay-grid">
+                          {overlay.underlays.map((row, idx) => (
+                            <div key={idx} className="overlay-row under">
+                              <div className="post">{row.postPosition}</div>
+                              <div className="name">{row.name}</div>
+                              <div className="odds">{row.toteOdds}</div>
+                              <div className="prob">AI {(row.aiProb * 100).toFixed(0)}% / Tote {(row.toteProb * 100).toFixed(0)}%</div>
+                              <div className="tag">{row.ratio.toFixed(2)}×</div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    <div className="overlay-summary">
+                      <span><strong>{overlay.overlays.length}</strong> overlays</span>
+                      <span><strong>{overlay.underlays.length}</strong> underlays</span>
+                      {overlay.toteTakeoutEstimate != null && <span>Est. takeout: <strong>{overlay.toteTakeoutEstimate}%</strong></span>}
+                      {overlay.missingOdds > 0 && <span style={{ color: '#fb7185' }}>⚠ {overlay.missingOdds} horses missing odds</span>}
+                      <button className="tote-action" style={{ marginLeft: 'auto', color: '#c4b5fd' }} onClick={() => openToteModal(selectedRace)}>Refresh Odds</button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <section className="pace-grid">
                 <div className="pace-box"><div className="pace-label">Pace Scenario</div><p>{analysis.paceScenario}</p></div>
@@ -2520,112 +2926,6 @@ Trifecta: ${analysis.exotics.trifecta}`;
                   <div className="pace-box mint" style={{ padding: '0.75rem 1rem' }}>
                     <div className="pace-label">Trip Angles</div>
                     <p style={{ margin: 0 }}>{analysis.tripAngles}</p>
-                  </div>
-                </section>
-              )}
-
-              {/* v7: Value School — Overlay detection */}
-              {overlays && overlays.length > 0 && (
-                <section>
-                  <h3>
-                    <span style={{ color: '#fcd34d' }}>💰</span> Value Analysis
-                  </h3>
-                  <p style={{ color: '#a8a29e', fontSize: '0.875rem', marginBottom: '1rem', fontStyle: 'italic' }}>
-                    Comparing AI's probability estimates against live tote odds (captured {currentOdds?.capturedAt ? new Date(currentOdds.capturedAt).toLocaleTimeString() : '?'} — odds shift until post).
-                  </p>
-
-                  {/* Bankroll input for Kelly */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(28, 25, 23, 0.4)', border: '1px solid #292524' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', color: '#78716c', textTransform: 'uppercase' }}>Bankroll</span>
-                    <span style={{ color: '#a8a29e' }}>$</span>
-                    <input
-                      type="number"
-                      value={bankroll}
-                      onChange={e => setBankroll(parseFloat(e.target.value) || 0)}
-                      style={{ width: '80px', padding: '0.25rem 0.4rem', fontSize: '0.9rem' }}
-                      min="1"
-                      step="10"
-                    />
-                    <span style={{ fontSize: '0.75rem', color: '#78716c', fontStyle: 'italic', flex: 1 }}>
-                      Kelly sizing uses ¼-Kelly (conservative) for this race
-                    </span>
-                  </div>
-
-                  <div className="overlay-grid">
-                    {overlays.map((row, idx) => (
-                      <div key={idx} className="overlay-row" style={{ borderLeftColor: row.overlay?.color || '#44403c' }}>
-                        <div className="overlay-horse">
-                          <span className="overlay-post">{row.postPosition}</span>
-                          <span className="overlay-name">{row.name}</span>
-                          {row.overlay && row.overlay.tier !== 'fair' && (
-                            <span className="overlay-badge" style={{ color: row.overlay.color, borderColor: row.overlay.color }}>
-                              {row.overlay.label}
-                            </span>
-                          )}
-                        </div>
-                        <div className="overlay-numbers">
-                          <div className="overlay-num">
-                            <div className="overlay-num-label">Tote</div>
-                            <div className="overlay-num-value">
-                              {row.currentOddsText}
-                              {row.oddsDirection === 'up' && <span style={{ color: '#6ee7b7', marginLeft: '0.2rem' }}>↑</span>}
-                              {row.oddsDirection === 'down' && <span style={{ color: '#fb7185', marginLeft: '0.2rem' }}>↓</span>}
-                            </div>
-                            <div className="overlay-num-sub">{(row.toteProb * 100).toFixed(0)}%</div>
-                          </div>
-                          <div className="overlay-num">
-                            <div className="overlay-num-label">AI</div>
-                            <div className="overlay-num-value" style={{ color: '#6ee7b7' }}>{(row.aiProb * 100).toFixed(0)}%</div>
-                            <div className="overlay-num-sub">est. win</div>
-                          </div>
-                          <div className="overlay-num">
-                            <div className="overlay-num-label">Edge</div>
-                            <div className="overlay-num-value" style={{ color: row.edge > 0 ? '#6ee7b7' : '#78716c' }}>
-                              {row.edge > 0 ? '+' : ''}{(row.edge * 100).toFixed(1)}%
-                            </div>
-                            <div className="overlay-num-sub">{row.overlay?.ratio ? row.overlay.ratio.toFixed(2) + 'x' : ''}</div>
-                          </div>
-                          {row.kelly > 0 && (
-                            <div className="overlay-num">
-                              <div className="overlay-num-label">¼ Kelly</div>
-                              <div className="overlay-num-value" style={{ color: '#fcd34d' }}>${row.kelly.toFixed(0)}</div>
-                              <div className="overlay-num-sub">to win</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Summary */}
-                  {(() => {
-                    const realOverlays = overlays.filter(r => r.overlay && ['small', 'meaningful', 'big'].includes(r.overlay.tier));
-                    const topBet = overlays.find(r => r.kelly > 0);
-                    if (realOverlays.length === 0) {
-                      return <div className="exotic-notes">No meaningful overlays detected — the market is pricing this race close to the AI's estimate. Straight bets don't look +EV here.</div>;
-                    }
-                    return (
-                      <div className="exotic-notes">
-                        <strong style={{ color: '#fcd34d' }}>{realOverlays.length} overlay{realOverlays.length !== 1 ? 's' : ''} found.</strong>{' '}
-                        {topBet ? `Biggest value: ${topBet.name} at ${topBet.currentOddsText}. Kelly-sized suggestion: $${topBet.kelly.toFixed(0)} to win.` : ''}
-                        {' '}Remember odds drift until post — recheck the tote 1-2 min out.
-                      </div>
-                    );
-                  })()}
-                </section>
-              )}
-
-              {/* Prompt to add odds if we have analysis but no odds yet */}
-              {analysis.probabilityDistribution && !currentOdds && (
-                <section>
-                  <div className="exotics-box" style={{ borderLeft: '3px solid #fcd34d' }}>
-                    <div className="pace-label" style={{ color: '#fcd34d' }}>💡 Unlock Value Analysis</div>
-                    <p style={{ margin: '0.5rem 0', color: '#d6d3d1' }}>
-                      Screenshot the TwinSpires Advanced tab (or any live tote display) and the app will compare AI probabilities to the tote and flag overlays.
-                    </p>
-                    <button className="ghost-btn" onClick={() => openScanModal(selectedRace)} style={{ marginTop: '0.5rem' }}>
-                      <IconScan /> Add Live Odds
-                    </button>
                   </div>
                 </section>
               )}
