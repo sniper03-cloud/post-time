@@ -1,0 +1,2739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0a09" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Post Time — AI Handicapper</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: 'Crimson Pro', Georgia, serif; background: #0c0a09; color: #e7e5e4; min-height: 100vh; min-height: 100dvh; -webkit-font-smoothing: antialiased; overscroll-behavior-y: contain; }
+    .display-font { font-family: 'Playfair Display', Georgia, serif; }
+    .mono-font { font-family: 'JetBrains Mono', monospace; }
+    .lily-bg { background-image: radial-gradient(ellipse at top left, rgba(244, 114, 182, 0.08), transparent 50%), radial-gradient(ellipse at bottom right, rgba(251, 191, 36, 0.06), transparent 50%), linear-gradient(180deg, #0c0a09 0%, #1c1917 100%); min-height: 100vh; min-height: 100dvh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+    .grain::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E"); pointer-events: none; mix-blend-mode: overlay; opacity: 0.3; z-index: 1; }
+    .container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; position: relative; z-index: 2; }
+    @media (min-width: 640px) { .container { padding: 3rem 2rem; } }
+    header { border-bottom: 1px solid #292524; padding-bottom: 1.5rem; margin-bottom: 2rem; }
+    .kicker { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .kicker svg { width: 16px; height: 16px; color: #fda4af; }
+    h1 { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: 3rem; line-height: 0.95; letter-spacing: -0.02em; margin: 0; }
+    @media (min-width: 640px) { h1 { font-size: 4.5rem; } }
+    h1 em { color: #fda4af; font-weight: 400; font-style: italic; }
+    h1 .sub { display: block; color: #78716c; font-size: 0.6em; }
+    .tagline { margin-top: 1rem; color: #a8a29e; font-style: italic; max-width: 36rem; }
+    h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 0; }
+    h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    section { margin-bottom: 2rem; }
+    label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; margin-bottom: 0.25rem; }
+    input, select, textarea { background: rgba(28, 25, 23, 0.6); border: 1px solid #44403c; color: #e7e5e4; padding: 0.6rem 0.75rem; font-family: 'Crimson Pro', serif; font-size: 1rem; width: 100%; transition: all 0.2s; border-radius: 0; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #fcd34d; background: rgba(28, 25, 23, 0.9); }
+    input::placeholder, textarea::placeholder { color: #57534e; font-style: italic; }
+    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+    @media (min-width: 640px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+    .row-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; gap: 0.5rem; flex-wrap: wrap; }
+    .horse-card { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 1rem; margin-bottom: 0.75rem; }
+    .horse-card.has-pp { border-left: 3px solid #6ee7b7; }
+    .horse-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .post-number { font-family: 'Playfair Display', serif; font-size: 2rem; color: rgba(253, 164, 175, 0.6); width: 2.5rem; text-align: center; }
+    .horse-name-input { flex: 1; font-size: 1.125rem !important; font-family: 'Playfair Display', serif !important; }
+    .x-btn { background: none; border: none; color: #57534e; padding: 0.25rem; cursor: pointer; }
+    .x-btn:hover { color: #fb7185; }
+    .horse-details { margin-left: 3rem; }
+    .pp-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #6ee7b7; border: 1px solid rgba(110, 231, 183, 0.3); padding: 0.15rem 0.4rem; margin-left: 0.5rem; }
+    .add-btn { margin-top: 1rem; background: none; border: none; color: #a8a29e; font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+    .add-btn:hover { color: #fcd34d; }
+    .primary-btn { width: 100%; background: linear-gradient(90deg, #fda4af, #fcd34d, #fda4af); color: #0c0a09; padding: 1.25rem; font-family: 'Playfair Display', serif; font-size: 1.25rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: filter 0.2s; }
+    .primary-btn:hover:not(:disabled) { filter: brightness(1.1); }
+    .primary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .secondary-btn { width: 100%; background: transparent; border: 1px solid #fcd34d; color: #fcd34d; padding: 1rem; font-family: 'Playfair Display', serif; font-size: 1.125rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.2s; }
+    .secondary-btn:hover:not(:disabled) { background: rgba(252, 211, 77, 0.1); }
+    .secondary-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .scan-btn { width: 100%; background: rgba(110, 231, 183, 0.1); border: 1px solid #6ee7b7; color: #6ee7b7; padding: 0.75rem 1rem; font-family: 'Playfair Display', serif; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; margin-bottom: 0.5rem; }
+    .scan-btn:hover:not(:disabled) { background: rgba(110, 231, 183, 0.2); }
+    .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-box { border: 1px solid #881337; background: rgba(76, 5, 25, 0.3); padding: 1rem; margin-bottom: 1.5rem; display: flex; gap: 0.75rem; color: #fecdd3; }
+    .info-box { border: 1px solid #44403c; background: rgba(251, 191, 36, 0.05); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: #d6d3d1; font-style: italic; }
+    .api-key-banner { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.3); padding: 1rem; margin-bottom: 1.5rem; }
+    .api-key-banner label { color: #fcd34d; margin-bottom: 0.5rem; }
+    .api-key-banner .hint { font-size: 0.875rem; color: #a8a29e; margin-top: 0.5rem; font-style: italic; }
+    .api-key-banner a { color: #fcd34d; }
+    .spinner { width: 20px; height: 20px; border: 2px solid rgba(12, 10, 9, 0.3); border-top-color: #0c0a09; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .spinner-amber { border: 2px solid rgba(252, 211, 77, 0.2); border-top-color: #fcd34d; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
+    .spinner-mint { border: 2px solid rgba(110, 231, 183, 0.2); border-top-color: #6ee7b7; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; margin-bottom: 1rem; flex-wrap: wrap; }
+    .breadcrumb .crumb { cursor: pointer; color: #a8a29e; }
+    .breadcrumb .crumb:hover { color: #fcd34d; }
+    .breadcrumb .active { color: #fda4af; }
+    .breadcrumb .sep { color: #44403c; }
+    .track-list, .race-list { display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+    .track-row, .race-row { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; border-left: 3px solid transparent; padding: 1rem; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 1rem; text-align: left; width: 100%; color: inherit; font: inherit; }
+    .track-row:hover, .race-row:hover { border-color: #44403c; border-left-color: #fda4af; background: rgba(28, 25, 23, 0.6); }
+    .track-row:disabled, .race-row:disabled { opacity: 0.5; cursor: not-allowed; }
+    .race-row.scanned { border-left-color: #6ee7b7; }
+    .track-post { font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #fcd34d; min-width: 4.5rem; }
+    .track-name { font-family: 'Playfair Display', serif; font-size: 1.25rem; flex: 1; }
+    .track-stats { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #78716c; text-align: right; }
+    .race-num { font-family: 'Playfair Display', serif; font-size: 2rem; color: #fda4af; width: 2.5rem; text-align: center; }
+    .race-meta { flex: 1; min-width: 0; }
+    .race-post { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #fcd34d; text-transform: uppercase; }
+    .race-name { font-family: 'Playfair Display', serif; font-size: 1.125rem; margin: 0.125rem 0; }
+    .race-desc { color: #a8a29e; font-size: 0.875rem; font-style: italic; }
+    .race-indicator { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: #6ee7b7; text-transform: uppercase; margin-top: 0.15rem; }
+    .pace-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 640px) { .pace-grid { grid-template-columns: 1fr 1fr; } }
+    .pace-box { border-left: 2px solid #fda4af; padding-left: 1rem; }
+    .pace-box.amber { border-left-color: #fcd34d; }
+    .pace-box.mint { border-left-color: #6ee7b7; }
+    .pace-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #fda4af; margin-bottom: 0.5rem; }
+    .pace-box.amber .pace-label { color: #fcd34d; }
+    .pace-box.mint .pace-label { color: #6ee7b7; }
+    .picks-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 640px) { .picks-grid { grid-template-columns: 1fr 1fr; } }
+    .pick-card { padding: 1.25rem; border: 1px solid #292524; }
+    .pick-card.win { background: linear-gradient(135deg, rgba(76, 5, 25, 0.4), transparent); }
+    .pick-card.place { background: linear-gradient(135deg, rgba(66, 32, 6, 0.3), transparent); }
+    .pick-card.show { background: linear-gradient(135deg, rgba(41, 37, 36, 0.4), transparent); }
+    .pick-card.longshot { background: linear-gradient(135deg, rgba(6, 59, 37, 0.3), transparent); }
+    .pick-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .pick-card.win .pick-label { color: #fda4af; }
+    .pick-card.place .pick-label { color: #fcd34d; }
+    .pick-card.show .pick-label { color: #d6d3d1; }
+    .pick-card.longshot .pick-label { color: #6ee7b7; }
+    .pick-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .pick-name .post { color: #78716c; }
+    .pick-reasoning { color: #d6d3d1; font-size: 0.875rem; font-style: italic; line-height: 1.5; }
+    .exotics-box { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 1.5rem; }
+    .exotic-row { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
+    @media (min-width: 640px) { .exotic-row { flex-direction: row; align-items: baseline; } }
+    .exotic-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #78716c; width: 6rem; }
+    .exotic-value { font-family: 'JetBrains Mono', monospace; color: #fde68a; }
+    .exotic-notes { color: #a8a29e; font-size: 0.875rem; font-style: italic; padding-top: 0.75rem; margin-top: 0.75rem; border-top: 1px solid #292524; }
+    .horse-result { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 1.25rem; margin-bottom: 0.75rem; }
+    .horse-result-header { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .horse-result-name { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+    .horse-result-name .post { color: #78716c; }
+    .horse-result-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .running-style { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; border: 1px solid #44403c; padding: 0.25rem 0.5rem; }
+    .trip-flag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: #fcd34d; border: 1px solid rgba(252, 211, 77, 0.4); padding: 0.25rem 0.5rem; text-transform: uppercase; }
+    .confidence { font-family: 'Playfair Display', serif; font-size: 1.5rem; }
+    .confidence .denom { color: #57534e; font-size: 0.875rem; }
+    .confidence-bar { width: 100%; height: 4px; background: #292524; overflow: hidden; margin-bottom: 1rem; }
+    .confidence-fill { height: 100%; background: linear-gradient(90deg, #fda4af, #fcd34d); }
+    .horse-detail-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; font-size: 0.875rem; }
+    @media (min-width: 640px) { .horse-detail-grid { grid-template-columns: 1fr 1fr; } }
+    .detail-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #78716c; margin-bottom: 0.25rem; }
+    .detail-label.strength { color: rgba(110, 231, 183, 0.7); }
+    .detail-label.concern { color: rgba(251, 113, 133, 0.7); }
+    .detail-label.verdict { color: rgba(252, 211, 77, 0.7); }
+    .detail-text { color: #d6d3d1; }
+    .detail-text.verdict { color: #e7e5e4; font-style: italic; }
+    .summary-section { border-top: 1px solid #292524; padding-top: 1.5rem; }
+    .summary-quote { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-style: italic; line-height: 1.6; color: #e7e5e4; }
+    .footer-note { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #44403c; padding-top: 2rem; border-top: 1px solid #292524; margin-top: 2rem; }
+    .action-bar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .ghost-btn { background: none; border: 1px solid #44403c; color: #a8a29e; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; padding: 0.5rem 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+    .ghost-btn:hover { color: #fcd34d; border-color: #fcd34d; }
+    #installPrompt { position: fixed; bottom: 1rem; left: 1rem; right: 1rem; background: #1c1917; border: 1px solid #fcd34d; padding: 1rem; z-index: 50; display: none; align-items: center; justify-content: space-between; gap: 1rem; }
+    #installPrompt.show { display: flex; }
+    #installPrompt button { background: #fcd34d; color: #0c0a09; border: none; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; }
+    .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .empty-state { text-align: center; padding: 2rem 1rem; color: #78716c; font-style: italic; }
+    .track-info-bar { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 0.75rem 1rem; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #a8a29e; text-transform: uppercase; }
+    .track-info-bar strong { color: #fda4af; font-weight: 600; }
+    .conditions-panel { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 1rem; margin-bottom: 1rem; }
+    .conditions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.5rem; }
+    @media (min-width: 640px) { .conditions-grid { grid-template-columns: repeat(4, 1fr); } }
+    .condition-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: #78716c; text-transform: uppercase; margin-bottom: 0.15rem; }
+    .condition-value { font-family: 'Crimson Pro', serif; font-size: 0.9rem; color: #e7e5e4; }
+    .condition-value.good { color: #6ee7b7; }
+    .condition-value.wet { color: #fcd34d; }
+    .condition-value.off { color: #fb7185; }
+    .playing-note { font-size: 0.8rem; color: #fcd34d; font-style: italic; padding-top: 0.75rem; border-top: 1px solid #292524; margin-top: 0.5rem; }
+    .conditions-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .conditions-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: #fda4af; text-transform: uppercase; }
+    .refresh-link { background: none; border: none; color: #78716c; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0; }
+    .refresh-link:hover { color: #fcd34d; }
+    .model-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
+    .model-btn { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 0.75rem 0.5rem; cursor: pointer; text-align: center; color: #a8a29e; font: inherit; }
+    .model-btn:hover { border-color: #44403c; }
+    .model-btn.active { border-color: #fda4af; background: rgba(76, 5, 25, 0.3); color: #e7e5e4; }
+    .model-btn .name { font-family: 'Playfair Display', serif; font-size: 1rem; display: block; }
+    .model-btn .price { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #78716c; display: block; margin-top: 0.15rem; letter-spacing: 0.1em; }
+    .model-btn.active .price { color: #fcd34d; }
+    .progress-detail { margin-top: 1rem; padding: 1rem; background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #a8a29e; }
+    .progress-detail .step { padding: 0.3rem 0; display: flex; align-items: center; gap: 0.5rem; }
+    .progress-detail .step.done { color: #6ee7b7; }
+    .progress-detail .step.active { color: #fcd34d; }
+    .progress-detail .step.pending { color: #57534e; }
+    .reasoning-box { background: rgba(28, 25, 23, 0.6); border-left: 2px solid #57534e; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 0.875rem; color: #a8a29e; font-style: italic; line-height: 1.5; }
+    .reasoning-box .research-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.2em; color: #78716c; text-transform: uppercase; font-style: normal; margin-bottom: 0.4rem; }
+
+    /* Scan modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); z-index: 100; display: flex; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
+    .modal { background: #1c1917; border: 1px solid #44403c; padding: 1.5rem; max-width: 600px; width: 100%; margin: 2rem 0; }
+    .modal-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; }
+    .modal-close { background: none; border: none; color: #78716c; cursor: pointer; padding: 0.25rem; }
+    .modal-close:hover { color: #fb7185; }
+    .upload-zone { border: 2px dashed #44403c; padding: 2rem 1rem; text-align: center; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; }
+    .upload-zone:hover { border-color: #6ee7b7; background: rgba(110, 231, 183, 0.03); }
+    .upload-zone.dragging { border-color: #6ee7b7; background: rgba(110, 231, 183, 0.08); }
+    .upload-zone input[type="file"] { display: none; }
+    .image-preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .image-preview { position: relative; aspect-ratio: 3/4; background: #0c0a09; border: 1px solid #44403c; overflow: hidden; }
+    .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .image-preview .remove-img { position: absolute; top: 0.25rem; right: 0.25rem; background: rgba(12, 10, 9, 0.8); border: 1px solid #44403c; color: #fb7185; padding: 0.25rem; cursor: pointer; line-height: 0; }
+    .image-preview .img-num { position: absolute; bottom: 0.25rem; left: 0.25rem; background: rgba(12, 10, 9, 0.8); border: 1px solid #44403c; color: #fcd34d; padding: 0.15rem 0.4rem; font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+    .scanned-summary { background: rgba(110, 231, 183, 0.08); border: 1px solid rgba(110, 231, 183, 0.3); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #d6d3d1; }
+    .scanned-summary strong { color: #6ee7b7; }
+
+    /* v7: Value School — Overlay panel */
+    .overlay-grid { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .overlay-row { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; border-left: 3px solid #44403c; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    @media (min-width: 640px) { .overlay-row { flex-direction: row; align-items: center; gap: 1rem; } }
+    .overlay-horse { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+    .overlay-post { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: rgba(253, 164, 175, 0.7); min-width: 1.8rem; text-align: center; }
+    .overlay-name { font-family: 'Playfair Display', serif; font-size: 1rem; color: #e7e5e4; flex: 1; overflow: hidden; text-overflow: ellipsis; }
+    .overlay-badge { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; border: 1px solid; padding: 0.15rem 0.4rem; white-space: nowrap; }
+    .overlay-numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; min-width: 0; }
+    @media (min-width: 640px) { .overlay-numbers { grid-template-columns: repeat(4, minmax(60px, 1fr)); } }
+    .overlay-num { text-align: center; padding: 0 0.25rem; }
+    .overlay-num-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.15em; color: #78716c; text-transform: uppercase; }
+    .overlay-num-value { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: #e7e5e4; font-weight: 600; margin: 0.1rem 0; }
+    .overlay-num-sub { font-size: 9px; color: #57534e; font-style: italic; }
+
+    /* v7: Collapsible data sections in scan modal */
+    .data-section { border: 1px solid #292524; margin-bottom: 0.75rem; }
+    .data-section.expanded { border-color: #44403c; }
+    .section-header { width: 100%; background: rgba(28, 25, 23, 0.4); border: none; padding: 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: inherit; font: inherit; text-align: left; }
+    .section-header:hover:not(:disabled) { background: rgba(28, 25, 23, 0.7); }
+    .section-header:disabled { cursor: default; }
+    .section-title { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
+    .section-num { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #fda4af; width: 1.5rem; text-align: center; }
+    .section-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #e7e5e4; }
+    .section-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; color: #a8a29e; margin-top: 0.15rem; text-transform: uppercase; }
+    .section-chevron { font-family: 'JetBrains Mono', monospace; color: #78716c; font-size: 1.25rem; font-weight: bold; }
+    .section-body { padding: 0.75rem 1rem 1rem; border-top: 1px solid #292524; }
+
+    /* v7: Mode toggle */
+    .mode-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; border: 1px solid #292524; padding: 0.25rem; }
+    .mode-btn { background: transparent; border: none; padding: 0.75rem; cursor: pointer; color: #a8a29e; font: inherit; font-family: 'Playfair Display', serif; font-size: 0.95rem; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+    .mode-btn:hover { color: #e7e5e4; }
+    .mode-btn.active { background: rgba(110, 231, 183, 0.12); color: #6ee7b7; }
+    .mode-btn .mode-sub { display: block; font-size: 9px; color: #57534e; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; margin-top: 0.2rem; }
+    .mode-btn.active .mode-sub { color: rgba(110, 231, 183, 0.7); }
+
+    /* v6: source badge on race rows */
+    .source-badge { font-size: 11px; margin-right: 0.3rem; }
+    .source-badge.brisnet { color: #fcd34d; }
+    .source-badge.photo { color: #6ee7b7; }
+
+    /* v6: brisnet upload zone */
+    .brisnet-zone { border: 2px dashed #44403c; padding: 1.5rem 1rem; text-align: center; margin-bottom: 1rem; cursor: pointer; transition: all 0.2s; }
+    .brisnet-zone:hover { border-color: #fcd34d; background: rgba(252, 211, 77, 0.03); }
+    .brisnet-zone.dragging { border-color: #fcd34d; background: rgba(252, 211, 77, 0.08); }
+    .brisnet-zone input[type="file"] { display: none; }
+    .brisnet-file-info { background: rgba(252, 211, 77, 0.08); border: 1px solid rgba(252, 211, 77, 0.3); padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; color: #d6d3d1; }
+    .brisnet-file-info strong { color: #fcd34d; }
+
+    /* v6: bulk import option */
+    .scope-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
+    .scope-toggle label { margin-bottom: 0; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Crimson Pro', serif; text-transform: none; letter-spacing: 0; color: #d6d3d1; font-size: 0.9rem; }
+    .scope-toggle input[type="checkbox"] { width: auto; margin: 0; accent-color: #fcd34d; }
+  </style>
+</head>
+<body>
+  <div class="lily-bg grain">
+    <div class="container">
+      <div id="app"></div>
+    </div>
+  </div>
+
+  <div id="installPrompt">
+    <div style="font-size: 0.875rem;">Install Post Time as an app</div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button id="installBtn">Install</button>
+      <button id="dismissInstall" style="background: transparent; color: #a8a29e; border: 1px solid #44403c;">Later</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef } = React;
+
+    const MODELS = {
+      haiku: { id: 'claude-haiku-4-5-20251001', name: 'Haiku 4.5', priceNote: '~$0.50 / race', desc: 'Fast and cheap. Low-stakes races.' },
+      sonnet: { id: 'claude-sonnet-4-5', name: 'Sonnet 4.5', priceNote: '~$1.50 / race', desc: 'Recommended default. Strong analysis.' },
+      opus: { id: 'claude-opus-4-7', name: 'Opus 4.7', priceNote: '~$3-5 / race', desc: 'Deepest research. For stakes and big bets.' }
+    };
+
+    // Storage helpers — PP data (persists indefinitely)
+    const ppStorageKey = (trackSlug, date, raceNum) => `pp:${trackSlug}:${date}:race${raceNum}`;
+    const savePPData = (trackSlug, date, raceNum, data) => {
+      try { localStorage.setItem(ppStorageKey(trackSlug, date, raceNum), JSON.stringify(data)); return true; }
+      catch (e) { console.error('Storage failed:', e); return false; }
+    };
+    const loadPPData = (trackSlug, date, raceNum) => {
+      try { const s = localStorage.getItem(ppStorageKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+    const getRacesWithPP = (trackSlug, date) => {
+      const races = new Map();
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`pp:${trackSlug}:${date}:race`)) {
+          const m = key.match(/race(\d+)$/);
+          if (m) {
+            try {
+              const data = JSON.parse(localStorage.getItem(key));
+              races.set(parseInt(m[1]), data.source || 'photo');
+            } catch (e) { races.set(parseInt(m[1]), 'photo'); }
+          }
+        }
+      }
+      return races;
+    };
+
+    // Storage helpers — Tote odds data (ephemeral, timestamped)
+    const oddsStorageKey = (trackSlug, date, raceNum) => `odds:${trackSlug}:${date}:race${raceNum}`;
+    const saveOddsData = (trackSlug, date, raceNum, data) => {
+      try { localStorage.setItem(oddsStorageKey(trackSlug, date, raceNum), JSON.stringify(data)); return true; }
+      catch (e) { console.error('Odds storage failed:', e); return false; }
+    };
+    const loadOddsData = (trackSlug, date, raceNum) => {
+      try { const s = localStorage.getItem(oddsStorageKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+    const deleteOddsData = (trackSlug, date, raceNum) => {
+      try { localStorage.removeItem(oddsStorageKey(trackSlug, date, raceNum)); return true; }
+      catch (e) { return false; }
+    };
+
+    // Odds parsing — accept "5-2", "5/2", "2.5", "12-1", "8/5"
+    const parseOdds = (input) => {
+      if (!input) return null;
+      const s = String(input).trim();
+      if (!s) return null;
+      // Decimal format: "2.5" or "2.50"
+      if (/^\d+(\.\d+)?$/.test(s)) {
+        const n = parseFloat(s);
+        return isNaN(n) ? null : n;
+      }
+      // Fractional: "5-2", "5/2", "8/5", "12-1"
+      const m = s.match(/^(\d+(?:\.\d+)?)[\/\-](\d+(?:\.\d+)?)$/);
+      if (m) {
+        const num = parseFloat(m[1]);
+        const den = parseFloat(m[2]);
+        if (isNaN(num) || isNaN(den) || den === 0) return null;
+        return num / den;
+      }
+      return null;
+    };
+
+    // Overlay math
+    const computeImpliedFromOdds = (decimalOdds) => {
+      // Fractional odds to implied probability. 5-1 (decimal 5.0) → 1/6 = 0.167
+      if (decimalOdds == null || decimalOdds <= 0) return null;
+      return 1 / (decimalOdds + 1);
+    };
+
+    const normalizeProbabilities = (probs) => {
+      // Normalize an array of probabilities so they sum to 1.0 (removes takeout from tote, removes calibration drift from AI)
+      const sum = probs.reduce((a, b) => a + (b || 0), 0);
+      if (sum === 0) return probs.map(() => 0);
+      return probs.map(p => (p || 0) / sum);
+    };
+
+    const classifyOverlay = (aiProb, toteProb) => {
+      if (!aiProb || !toteProb) return null;
+      const ratio = aiProb / toteProb;
+      if (ratio >= 2.0) return { tier: 'big', ratio, color: '#fda4af', label: 'BIG overlay' };
+      if (ratio >= 1.5) return { tier: 'meaningful', ratio, color: '#fcd34d', label: 'Meaningful overlay' };
+      if (ratio >= 1.25) return { tier: 'small', ratio, color: '#fde68a', label: 'Small overlay' };
+      if (ratio <= 0.67) return { tier: 'big-under', ratio, color: '#57534e', label: 'Big underlay' };
+      if (ratio <= 0.80) return { tier: 'under', ratio, color: '#57534e', label: 'Underlay' };
+      return { tier: 'fair', ratio, color: '#78716c', label: 'Fair price' };
+    };
+
+    // Kelly sizing — fractional Kelly to avoid the aggressiveness of full Kelly
+    // edge = aiProb - toteProb (in normalized probability space)
+    // For bet sizing we use raw decimal odds and AI's subjective probability
+    const computeKelly = (aiProb, decimalOdds, bankroll, fraction = 0.25) => {
+      if (!aiProb || !decimalOdds || !bankroll) return 0;
+      // Full Kelly formula for fixed-odds: f* = (p*(b+1) - 1) / b, where b = decimalOdds
+      const b = decimalOdds;
+      const p = aiProb;
+      const fullKelly = (p * (b + 1) - 1) / b;
+      if (fullKelly <= 0) return 0;
+      return Math.max(0, bankroll * fullKelly * fraction);
+    };
+
+    // ================================================================
+    // Brisnet Single File Parser
+    // ================================================================
+    // The Brisnet "Single File" PP format is a comma-delimited file with ~1400 fields per horse.
+    // Most fields are positional (field N = specific data point). We parse the handicapping-critical
+    // subset. Values are 1-indexed in Brisnet docs; our array is 0-indexed so subtract 1.
+    //
+    // Reference: https://support.brisnet.com/hc/en-us/articles/360056092092
+    //
+    // Key field ranges we use:
+    //   1-24:     Today's race info (track, date, race#, distance, surface, type, purse, etc.)
+    //   25-70:    Horse identification (name, age, sex, pedigree, connections, weight, meds)
+    //   71-100:   Today's odds, morning line, program number
+    //   101-200:  Lifetime, year, surface, track, distance records; BRIS speed/class figures
+    //   256-355:  Last 10 races: date, track, race#, surface, distance, etc.
+    //   456-555:  Last 10 races: beyer/bris speed, pace figures
+    //   556-655:  Last 10 races: finish position, beaten lengths
+    //   656-755:  Last 10 races: trip comments
+    //   1056-1075: Trainer name per race
+    //   1066-1085: Jockey name per race
+    //   1177-1181: Best BRIS speeds by surface
+    //   1328-1330: Best BRIS speed life/year
+
+    const BRIS_FIELD = {
+      // *** Today's Race Data (fields 1-27) ***
+      track: 1, date: 2, raceNum: 3, postPosition: 4, entry: 5,
+      distanceYards: 6, surface: 7, /* 8 reserved */ raceType: 9,
+      ageSexRestrictions: 10, classification: 11, purse: 12,
+      claimingPrice: 13, horseClaimingPrice: 14, trackRecord: 15,
+      raceConditions: 16, todayLasixList: 17, todayButeList: 18,
+      todayCoupledList: 19, todayMutuelList: 20, simulcastHost: 21,
+      simulcastRace: 22, breedType: 23, nasalStrip: 24, allWeather: 25,
+
+      // *** Today's Horse/Trainer/Jockey/Owner (28-44) ***
+      currentTrainer: 28, trainerStartsMeet: 29, trainerWinsMeet: 30,
+      trainerPlacesMeet: 31, trainerShowsMeet: 32,
+      currentJockey: 33, apprenticeAllowance: 34,
+      jockeyStartsMeet: 35, jockeyWinsMeet: 36,
+      jockeyPlacesMeet: 37, jockeyShowsMeet: 38,
+      owner: 39, ownerSilks: 40, mainTrackOnlyAE: 41,
+      // field 42 reserved
+      programNumber: 43,
+      morningLineOdds: 44,   // NUMERIC 999.99 — IMPORTANT: this is field 44, not 61
+
+      // *** Horse History Data (45-58) ***
+      horseName: 45,         // CHARACTER(25)
+      yearOfBirth: 46,       // NUMERIC(2) two-digit
+      foalMonth: 47,
+      // field 48 reserved
+      sex: 49,
+      horseColor: 50,
+      weight: 51,            // NUMERIC(3) — weight carried TODAY
+      sire: 52,
+      sireSire: 53,
+      dam: 54,
+      damSire: 55,
+      breeder: 56,
+      stateBred: 57,         // State/Country where bred
+      programPostPosition: 58, // Updated post after scratches
+      // 59-61 reserved
+
+      // *** Current Horse Stats (62-101) ***
+      medication: 62,        // NUMERIC(2) w/first-time Lasix: 0-5, 9
+      medicationOld: 63,     // NUMERIC(1) legacy
+      equipmentChange: 64,   // 0=none, 1=blinkers on, 2=off
+
+      // Lifetime @ today's distance (65-69)
+      distanceStarts: 65, distanceWins: 66, distancePlaces: 67,
+      distanceShows: 68, distanceEarnings: 69,
+
+      // Lifetime @ today's track (70-74)
+      trackStarts: 70, trackWins: 71, trackPlaces: 72,
+      trackShows: 73, trackEarnings: 74,
+
+      // Turf record (75-79)
+      turfStarts: 75, turfWins: 76, turfPlaces: 77,
+      turfShows: 78, turfEarnings: 79,
+
+      // Wet record (80-84)
+      wetStarts: 80, wetWins: 81, wetPlaces: 82,
+      wetShows: 83, wetEarnings: 84,
+
+      // Current year (85-90) — note: field 85 is the YEAR label
+      currentYear: 85, currentYearStarts: 86, currentYearWins: 87,
+      currentYearPlaces: 88, currentYearShows: 89, currentYearEarnings: 90,
+
+      // Previous year (91-96)
+      previousYear: 91, previousYearStarts: 92, previousYearWins: 93,
+      previousYearPlaces: 94, previousYearShows: 95, previousYearEarnings: 96,
+
+      // Lifetime record (97-101)
+      lifetimeStarts: 97, lifetimeWins: 98, lifetimePlaces: 99,
+      lifetimeShows: 100, lifetimeEarnings: 101,
+
+      // *** Workouts (102-209) — 12 slots each ***
+      workoutDate: 102,         // 102-113 — CYMD format
+      workoutTime: 114,         // 114-125 — negative = bullet
+      workoutTrack: 126,        // 126-137
+      workoutDistance: 138,     // 138-149 (yards, - for about)
+      workoutCondition: 150,    // 150-161
+      workoutDescription: 162,  // 162-173 — H/B + g + D
+      workoutTrackType: 174,    // 174-185 — MT/IM/TT etc
+      workoutNumWorks: 186,     // 186-197 — # works that day/dist
+      workoutRank: 198,         // 198-209 — "N of M" style rank
+
+      // *** Pace / Bias (210-224) ***
+      brisRunStyle: 210,        // E/EP/P/S etc — KEY for pace
+      quirinSpeedPoints: 211,   // 0-8 — KEY for pace
+      /* 212-213 reserved */
+      brisPacePar2f: 214, brisPacePar4f: 215, brisPacePar6f: 216,
+      brisSpeedParClass: 217, brisLatePacePar: 218,
+      tjCombo365Starts: 219, tjCombo365Wins: 220,
+      tjCombo365Places: 221, tjCombo365Shows: 222, tjCombo365ROI: 223,
+      daysSinceLastRace: 224,
+
+      // Race conditions extended (225-230) — mostly 1st-horse-only
+
+      // All-weather record (231-236)
+      awStarts: 231, awWins: 232, awPlaces: 233,
+      awShows: 234, awEarnings: 235, awBestBrisSpeed: 236,
+
+      // Today's race extras (238-250)
+      lowClaimingPrice: 238, statebredFlag: 239,
+      // 240-248 wager types
+      // 249-250 reserved
+
+      // THE NUMBER
+      brisPrimePower: 251,      // NUMERIC(999.99) — Brisnet's flagship
+
+      // *** PAST PERFORMANCES (10 races deep) — base fields ***
+      // Each is an array of 10 slots (most recent → oldest)
+      ppDate: 256,              // CYMD
+      ppDaysSincePrev: 266,
+      // 275 reserved
+      ppTrackCode: 276,         // long track code
+      ppBrisTrackCode: 286,     // 3-char BRIS code
+      ppRaceNum: 296,
+      ppTrackCondition: 306,
+      ppDistanceYards: 316,
+      ppSurface: 326,           // see field #7
+      ppSpecialChute: 336,
+      ppNumEntrants: 346,
+      ppPostPosition: 356,
+      ppEquipment: 366,         // b - blinkers
+      ppRaceName: 376,
+      ppMedication: 386,
+      ppTripComment: 396,       // 100 chars
+      ppWinnerName: 406,
+      pp2ndPlaceName: 416,
+      pp3rdPlaceName: 426,
+      ppWinnerWeight: 436,
+      pp2ndPlaceWeight: 446,
+      pp3rdPlaceWeight: 456,
+      ppWinnerMargin: 466,
+      pp2ndMargin: 476,
+      pp3rdMargin: 486,
+      ppAlternateComment: 496,
+      ppWeight: 506,
+      ppOdds: 516,
+      ppPpEntry: 526,
+      ppRaceClassification: 536,
+      ppHorseClaimingPrice: 546,
+      ppRacePurse: 556,
+      ppStartCallPos: 566,
+      pp1stCallPos: 576,
+      pp2ndCallPos: 586,
+      ppGateCallPos: 596,       // 5/2002
+      ppStretchCallPos: 606,
+      ppFinishPos: 616,
+      ppMoneyPos: 626,
+      ppStartBtnLngths: 636,    // vs leader margin
+      ppStartBtnLngthsOnly: 646,
+      pp1stBtnLngths: 656,
+      pp1stBtnLngthsOnly: 666,
+      pp2ndBtnLngths: 676,
+      pp2ndBtnLngthsOnly: 686,
+      ppBrisRaceShape1: 696,    // 2/07 update
+      // 706-715 reserved
+      ppStretchBtnLngths: 716,
+      ppStretchBtnLngthsOnly: 726,
+      ppFinishBtnLngths: 736,   // vs winner margin
+      ppFinishBtnLngthsOnly: 746,
+      ppBrisRaceShape2: 756,
+      ppBrisPace2f: 766,
+      ppBrisPace4f: 776,
+      ppBrisPace6f: 786,
+      ppBrisPace8f: 796,
+      ppBrisPace10f: 806,
+      ppBrisLatePace: 816,
+      // 826-845 reserved
+      ppBrisSpeedRating: 846,   // *** KEY — this is the BRIS speed fig (~Beyer)
+      ppSpeedRating: 856,       // older Speed Rating
+      ppTrackVariant: 866,
+      pp2fFraction: 876,
+      pp3fFraction: 886,
+      pp4fFraction: 896,
+      pp5fFraction: 906,
+      pp6fFraction: 916,
+      pp7fFraction: 926,
+      pp8fFraction: 936,
+      pp10fFraction: 946,
+      pp12fFraction: 956,
+      pp14fFraction: 966,
+      pp16fFraction: 976,
+      ppFraction1: 986,
+      ppFraction2: 996,
+      ppFraction3: 1006,
+      // 1016-1035 reserved
+      ppFinalTime: 1036,
+      ppClaimedCode: 1046,
+      ppTrainer: 1056,
+      ppJockey: 1066,
+      ppApprentice: 1076,
+      ppRaceType: 1086,
+      ppAgeSexRestrictions: 1096,
+      ppStatebred: 1106,
+      ppRestricted: 1116,
+      ppFavorite: 1126,
+      ppFrontBandages: 1136,
+      // 1146 reserved
+
+      // Trainer Stats (current year) 1147-1151
+      trainerStartsYear: 1147, trainerWinsYear: 1148,
+      trainerPlacesYear: 1149, trainerShowsYear: 1150, trainerROIYear: 1151,
+      // Trainer previous year 1152-1156
+      trainerStartsPrev: 1152, trainerWinsPrev: 1153,
+      trainerPlacesPrev: 1154, trainerShowsPrev: 1155, trainerROIPrev: 1156,
+      // Jockey Y-T-D 1157-1161
+      jockeyStartsYear: 1157, jockeyWinsYear: 1158,
+      jockeyPlacesYear: 1159, jockeyShowsYear: 1160, jockeyROIYear: 1161,
+      // Jockey previous year 1162-1166
+      jockeyStartsPrev: 1162, jockeyWinsPrev: 1163,
+      jockeyPlacesPrev: 1164, jockeyShowsPrev: 1165, jockeyROIPrev: 1166,
+
+      // BRIS Speed Par for class of last 10 races (1167-1176 array)
+      brisSpeedParLast10: 1167,
+
+      // Best BRIS Speeds
+      sireStudFee: 1177,
+      bestBrisSpeedFast: 1178,
+      bestBrisSpeedTurf: 1179,
+      bestBrisSpeedOff: 1180,
+      bestBrisSpeedDist: 1181,
+
+      // Bar shoes (1182-1191), Company Line Codes (1192-1201)
+      // Low/High claiming price arrays (1202-1221)
+      auctionPrice: 1222,
+      auctionInfo: 1223,
+
+      // Nasal Strip / Off-the-turf indicator for prior 10 starts (1254-1263)
+
+      // BRIS Pedigree Ratings (1264-1267)
+      brisDirtPedigree: 1264,
+      brisMudPedigree: 1265,
+      brisTurfPedigree: 1266,
+      brisDistPedigree: 1267,
+
+      // Best BRIS Speed: Life / Year / 2nd Yr / This Track (1328-1331)
+      bestBrisSpeedLife: 1328,
+      bestBrisSpeedYear: 1329,
+      bestBrisSpeed2ndYear: 1330,
+      bestBrisSpeedThisTrack: 1331,
+
+      // Fast Dirt record (1332-1336)
+      fastDirtStarts: 1332, fastDirtWins: 1333,
+      fastDirtPlaces: 1334, fastDirtShows: 1335, fastDirtEarnings: 1336,
+
+      // Key Trainer Stats: 6 categories × 5 fields (1337-1366)
+      trnStatCat1Label: 1337, trnStatCat1Starts: 1338, trnStatCat1WinPct: 1339,
+      trnStatCat1ItmPct: 1340, trnStatCat1ROI: 1341,
+      trnStatCat2Label: 1342,
+      trnStatCat3Label: 1347,
+      trnStatCat4Label: 1352,
+      trnStatCat5Label: 1357,
+      trnStatCat6Label: 1362,
+
+      // J/T Combo meet stats (1413-1417)
+      tjComboMeetStarts: 1413, tjComboMeetWins: 1414,
+      tjComboMeetPlaces: 1415, tjComboMeetShows: 1416, tjComboMeetROI: 1417
+    };
+
+    // CSV parser that handles quoted strings with commas
+    const parseCSVLine = (line) => {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+          else inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current);
+      return result.map(s => s.trim());
+    };
+
+    // Get field value (1-indexed). Returns null if empty.
+    const getField = (row, fieldNum) => {
+      if (fieldNum - 1 >= row.length) return null;
+      const v = row[fieldNum - 1];
+      if (v === undefined || v === null || v === '') return null;
+      return v;
+    };
+
+    // Get numeric field, return null if not a valid number
+    const getNumField = (row, fieldNum) => {
+      const v = getField(row, fieldNum);
+      if (v === null) return null;
+      const n = parseFloat(v);
+      return isNaN(n) ? null : n;
+    };
+
+    // Convert yards to human-readable distance. Handles US standard distances.
+    const yardsToDistance = (yards) => {
+      if (!yards) return null;
+      const abs = Math.abs(yards);
+      // Standard US route distances (within 10yd tolerance for BrisNet rounding)
+      const standards = [
+        { yards: 1320, name: '6 Furlongs' },
+        { yards: 1430, name: '6 1/2 Furlongs' },
+        { yards: 1540, name: '7 Furlongs' },
+        { yards: 1650, name: '7 1/2 Furlongs' },
+        { yards: 1760, name: '1 mile' },
+        { yards: 1870, name: '1 1/16 miles' },
+        { yards: 1980, name: '1 1/8 miles' },
+        { yards: 2090, name: '1 3/16 miles' },
+        { yards: 2200, name: '1 1/4 miles' },
+        { yards: 2310, name: '1 5/16 miles' },
+        { yards: 2420, name: '1 3/8 miles' },
+        { yards: 2640, name: '1 1/2 miles' },
+        { yards: 2860, name: '1 5/8 miles' },
+        { yards: 3080, name: '1 3/4 miles' },
+        { yards: 3300, name: '1 7/8 miles' },
+        { yards: 3520, name: '2 miles' },
+        { yards: 880, name: '4 Furlongs' },
+        { yards: 990, name: '4 1/2 Furlongs' },
+        { yards: 1100, name: '5 Furlongs' },
+        { yards: 1210, name: '5 1/2 Furlongs' }
+      ];
+      for (const s of standards) {
+        if (Math.abs(abs - s.yards) <= 10) return s.name;
+      }
+      // Fallback: compute in furlongs
+      const furlongs = abs / 220;
+      if (furlongs >= 8) return `${(abs / 1760).toFixed(2)} miles`;
+      if (furlongs === Math.floor(furlongs)) return `${furlongs} Furlongs`;
+      return `${furlongs.toFixed(1)} Furlongs`;
+    };
+
+    const surfaceCodeToName = (code) => {
+      const map = { 'D': 'Dirt', 'd': 'Inner Dirt', 'T': 'Turf', 't': 'Inner Turf', 's': 'Steeplechase', 'h': 'Hunt', 'A': 'All Weather' };
+      return map[code] || code || 'Unknown';
+    };
+
+    const raceTypeToName = (code) => {
+      const map = {
+        'G1': 'Grade I Stakes', 'G2': 'Grade II Stakes', 'G3': 'Grade III Stakes',
+        'N': 'Non-graded Stakes', 'A': 'Allowance', 'R': 'Starter Allowance',
+        'T': 'Starter Handicap', 'C': 'Claiming', 'CO': 'Optional Claiming',
+        'S': 'Maiden Special Weight', 'M': 'Maiden Claiming',
+        'AO': 'Allowance Optional Claiming', 'MO': 'Maiden Optional Claiming',
+        'NO': 'Optional Claiming Stakes'
+      };
+      return map[code] || code || 'Unknown';
+    };
+
+    // Parse a single horse row into our app's PP data schema
+    const parseBrisnetRow = (row) => {
+      const yob = getNumField(row, BRIS_FIELD.yearOfBirth);
+      let age = null;
+      if (yob !== null) {
+        const fullYear = yob < 50 ? 2000 + yob : 1900 + yob;
+        age = new Date().getFullYear() - fullYear;
+      }
+
+      const medCode = getNumField(row, BRIS_FIELD.medication);
+      const medMap = { 0: null, 1: 'L', 2: 'B', 3: 'L/B', 4: 'L1', 5: 'L1/B', 9: null };
+      const medication = medCode !== null ? medMap[medCode] : null;
+
+      const eqCode = getNumField(row, BRIS_FIELD.equipmentChange);
+      const eqMap = { 0: null, 1: 'Blinkers on', 2: 'Blinkers off', 9: null };
+      const equipmentChange = eqCode !== null ? eqMap[eqCode] : null;
+
+      const horse = {
+        // Identity
+        postPosition: getField(row, BRIS_FIELD.postPosition),
+        programNumber: getField(row, BRIS_FIELD.programNumber),
+        programPostPosition: getField(row, BRIS_FIELD.programPostPosition),
+        horseName: getField(row, BRIS_FIELD.horseName),
+        age,
+        sex: getField(row, BRIS_FIELD.sex),
+        color: getField(row, BRIS_FIELD.horseColor),
+        weight: getNumField(row, BRIS_FIELD.weight),
+        morningLine: getNumField(row, BRIS_FIELD.morningLineOdds),
+        medication,
+        equipmentChange,
+        entry: getField(row, BRIS_FIELD.entry),
+        scratched: getField(row, BRIS_FIELD.entry) === 'S',
+
+        // Pedigree
+        sire: getField(row, BRIS_FIELD.sire),
+        sireSire: getField(row, BRIS_FIELD.sireSire),
+        dam: getField(row, BRIS_FIELD.dam),
+        damSire: getField(row, BRIS_FIELD.damSire),
+        breeder: getField(row, BRIS_FIELD.breeder),
+        stateBred: getField(row, BRIS_FIELD.stateBred),
+        auctionPrice: getField(row, BRIS_FIELD.auctionPrice),
+        auctionInfo: getField(row, BRIS_FIELD.auctionInfo),
+        sireStudFee: getField(row, BRIS_FIELD.sireStudFee),
+
+        // Connections today
+        jockey: getField(row, BRIS_FIELD.currentJockey),
+        trainer: getField(row, BRIS_FIELD.currentTrainer),
+        owner: getField(row, BRIS_FIELD.owner),
+        apprenticeAllowance: getNumField(row, BRIS_FIELD.apprenticeAllowance),
+
+        // KEY PACE FIELDS — critical for analysis
+        brisRunStyle: getField(row, BRIS_FIELD.brisRunStyle),           // E / EP / P / S
+        quirinSpeedPoints: getNumField(row, BRIS_FIELD.quirinSpeedPoints), // 0-8
+
+        // KEY COMPOSITE NUMBER
+        brisPrimePower: getNumField(row, BRIS_FIELD.brisPrimePower),
+
+        // BRIS Pace Pars for class
+        paceParClass: {
+          pace2f: getNumField(row, BRIS_FIELD.brisPacePar2f),
+          pace4f: getNumField(row, BRIS_FIELD.brisPacePar4f),
+          pace6f: getNumField(row, BRIS_FIELD.brisPacePar6f),
+          speed: getNumField(row, BRIS_FIELD.brisSpeedParClass),
+          latePace: getNumField(row, BRIS_FIELD.brisLatePacePar)
+        },
+
+        daysSinceLastRace: getNumField(row, BRIS_FIELD.daysSinceLastRace),
+
+        // Pedigree ratings
+        pedigreeRatings: {
+          dirt: getField(row, BRIS_FIELD.brisDirtPedigree),
+          mud: getField(row, BRIS_FIELD.brisMudPedigree),
+          turf: getField(row, BRIS_FIELD.brisTurfPedigree),
+          distance: getField(row, BRIS_FIELD.brisDistPedigree)
+        },
+
+        // Records
+        lifetimeRecord: {
+          starts: getNumField(row, BRIS_FIELD.lifetimeStarts),
+          wins: getNumField(row, BRIS_FIELD.lifetimeWins),
+          places: getNumField(row, BRIS_FIELD.lifetimePlaces),
+          shows: getNumField(row, BRIS_FIELD.lifetimeShows),
+          earnings: getField(row, BRIS_FIELD.lifetimeEarnings),
+          topBeyer: getNumField(row, BRIS_FIELD.bestBrisSpeedLife)
+        },
+        currentYearRecord: {
+          year: getNumField(row, BRIS_FIELD.currentYear),
+          starts: getNumField(row, BRIS_FIELD.currentYearStarts),
+          wins: getNumField(row, BRIS_FIELD.currentYearWins),
+          places: getNumField(row, BRIS_FIELD.currentYearPlaces),
+          shows: getNumField(row, BRIS_FIELD.currentYearShows),
+          earnings: getField(row, BRIS_FIELD.currentYearEarnings)
+        },
+        previousYearRecord: {
+          year: getNumField(row, BRIS_FIELD.previousYear),
+          starts: getNumField(row, BRIS_FIELD.previousYearStarts),
+          wins: getNumField(row, BRIS_FIELD.previousYearWins),
+          places: getNumField(row, BRIS_FIELD.previousYearPlaces),
+          shows: getNumField(row, BRIS_FIELD.previousYearShows),
+          earnings: getField(row, BRIS_FIELD.previousYearEarnings)
+        },
+        trackRecord: {
+          starts: getNumField(row, BRIS_FIELD.trackStarts),
+          wins: getNumField(row, BRIS_FIELD.trackWins),
+          places: getNumField(row, BRIS_FIELD.trackPlaces),
+          shows: getNumField(row, BRIS_FIELD.trackShows),
+          earnings: getField(row, BRIS_FIELD.trackEarnings)
+        },
+        distanceRecord: {
+          starts: getNumField(row, BRIS_FIELD.distanceStarts),
+          wins: getNumField(row, BRIS_FIELD.distanceWins),
+          places: getNumField(row, BRIS_FIELD.distancePlaces),
+          shows: getNumField(row, BRIS_FIELD.distanceShows),
+          earnings: getField(row, BRIS_FIELD.distanceEarnings)
+        },
+        turfRecord: {
+          starts: getNumField(row, BRIS_FIELD.turfStarts),
+          wins: getNumField(row, BRIS_FIELD.turfWins),
+          places: getNumField(row, BRIS_FIELD.turfPlaces),
+          shows: getNumField(row, BRIS_FIELD.turfShows),
+          earnings: getField(row, BRIS_FIELD.turfEarnings)
+        },
+        wetRecord: {
+          starts: getNumField(row, BRIS_FIELD.wetStarts),
+          wins: getNumField(row, BRIS_FIELD.wetWins),
+          places: getNumField(row, BRIS_FIELD.wetPlaces),
+          shows: getNumField(row, BRIS_FIELD.wetShows),
+          earnings: getField(row, BRIS_FIELD.wetEarnings)
+        },
+        fastDirtRecord: {
+          starts: getNumField(row, BRIS_FIELD.fastDirtStarts),
+          wins: getNumField(row, BRIS_FIELD.fastDirtWins),
+          places: getNumField(row, BRIS_FIELD.fastDirtPlaces),
+          shows: getNumField(row, BRIS_FIELD.fastDirtShows),
+          earnings: getField(row, BRIS_FIELD.fastDirtEarnings)
+        },
+        brisSpeedFigures: {
+          bestLife: getNumField(row, BRIS_FIELD.bestBrisSpeedLife),
+          bestYear: getNumField(row, BRIS_FIELD.bestBrisSpeedYear),
+          best2ndYear: getNumField(row, BRIS_FIELD.bestBrisSpeed2ndYear),
+          bestThisTrack: getNumField(row, BRIS_FIELD.bestBrisSpeedThisTrack),
+          bestFast: getNumField(row, BRIS_FIELD.bestBrisSpeedFast),
+          bestTurf: getNumField(row, BRIS_FIELD.bestBrisSpeedTurf),
+          bestOff: getNumField(row, BRIS_FIELD.bestBrisSpeedOff),
+          bestDistance: getNumField(row, BRIS_FIELD.bestBrisSpeedDist)
+        },
+        trainerStats: {
+          meet: {
+            starts: getNumField(row, BRIS_FIELD.trainerStartsMeet),
+            wins: getNumField(row, BRIS_FIELD.trainerWinsMeet),
+            places: getNumField(row, BRIS_FIELD.trainerPlacesMeet),
+            shows: getNumField(row, BRIS_FIELD.trainerShowsMeet)
+          },
+          currentYear: {
+            starts: getNumField(row, BRIS_FIELD.trainerStartsYear),
+            wins: getNumField(row, BRIS_FIELD.trainerWinsYear),
+            places: getNumField(row, BRIS_FIELD.trainerPlacesYear),
+            shows: getNumField(row, BRIS_FIELD.trainerShowsYear),
+            roi: getNumField(row, BRIS_FIELD.trainerROIYear)
+          }
+        },
+        // KEY Trainer Angle Categories (label + W%/ITM/ROI)
+        trainerAngles: [1, 2, 3, 4, 5, 6].map(n => {
+          const labelField = BRIS_FIELD['trnStatCat' + n + 'Label'] || (BRIS_FIELD.trnStatCat1Label + (n - 1) * 5);
+          return {
+            label: getField(row, labelField),
+            starts: getNumField(row, labelField + 1),
+            winPct: getNumField(row, labelField + 2),
+            itmPct: getNumField(row, labelField + 3),
+            roi: getNumField(row, labelField + 4)
+          };
+        }).filter(a => a.label),
+        jockeyStats: {
+          meet: {
+            starts: getNumField(row, BRIS_FIELD.jockeyStartsMeet),
+            wins: getNumField(row, BRIS_FIELD.jockeyWinsMeet),
+            places: getNumField(row, BRIS_FIELD.jockeyPlacesMeet),
+            shows: getNumField(row, BRIS_FIELD.jockeyShowsMeet)
+          }
+        },
+        jockeyTrainerCombo: {
+          meet: {
+            starts: getNumField(row, BRIS_FIELD.tjComboMeetStarts),
+            wins: getNumField(row, BRIS_FIELD.tjComboMeetWins),
+            places: getNumField(row, BRIS_FIELD.tjComboMeetPlaces),
+            shows: getNumField(row, BRIS_FIELD.tjComboMeetShows),
+            roi: getNumField(row, BRIS_FIELD.tjComboMeetROI)
+          },
+          last365: {
+            starts: getNumField(row, BRIS_FIELD.tjCombo365Starts),
+            wins: getNumField(row, BRIS_FIELD.tjCombo365Wins),
+            places: getNumField(row, BRIS_FIELD.tjCombo365Places),
+            shows: getNumField(row, BRIS_FIELD.tjCombo365Shows),
+            roi: getNumField(row, BRIS_FIELD.tjCombo365ROI)
+          }
+        }
+      };
+
+      // Parse past performances (10 back, most recent first)
+      horse.pastPerformances = [];
+      for (let i = 0; i < 10; i++) {
+        const date = getField(row, BRIS_FIELD.ppDate + i);
+        if (!date) continue;
+        const distYards = getNumField(row, BRIS_FIELD.ppDistanceYards + i);
+        const pp = {
+          date: date,
+          daysSincePrev: getNumField(row, BRIS_FIELD.ppDaysSincePrev + i),
+          trackCode: getField(row, BRIS_FIELD.ppTrackCode + i),
+          track: getField(row, BRIS_FIELD.ppBrisTrackCode + i),
+          raceNum: getNumField(row, BRIS_FIELD.ppRaceNum + i),
+          condition: getField(row, BRIS_FIELD.ppTrackCondition + i),
+          distanceYards: distYards,
+          distance: yardsToDistance(distYards),
+          surface: surfaceCodeToName(getField(row, BRIS_FIELD.ppSurface + i)),
+          specialChute: getField(row, BRIS_FIELD.ppSpecialChute + i) === 'c',
+          numEntrants: getNumField(row, BRIS_FIELD.ppNumEntrants + i),
+          postPosition: getNumField(row, BRIS_FIELD.ppPostPosition + i),
+          equipment: getField(row, BRIS_FIELD.ppEquipment + i),
+          raceName: getField(row, BRIS_FIELD.ppRaceName + i),
+          raceType: raceTypeToName(getField(row, BRIS_FIELD.ppRaceType + i)),
+          raceClassification: getField(row, BRIS_FIELD.ppRaceClassification + i),
+          beyerFig: getNumField(row, BRIS_FIELD.ppBrisSpeedRating + i), // BRIS Speed = equivalent of Beyer
+          oldSpeedRating: getNumField(row, BRIS_FIELD.ppSpeedRating + i),
+          trackVariant: getNumField(row, BRIS_FIELD.ppTrackVariant + i),
+          tripComment: getField(row, BRIS_FIELD.ppTripComment + i),
+          altComment: getField(row, BRIS_FIELD.ppAlternateComment + i),
+          // Placings
+          winner: getField(row, BRIS_FIELD.ppWinnerName + i),
+          winnerWeight: getNumField(row, BRIS_FIELD.ppWinnerWeight + i),
+          winnerMargin: getNumField(row, BRIS_FIELD.ppWinnerMargin + i),
+          secondPlace: getField(row, BRIS_FIELD.pp2ndPlaceName + i),
+          secondPlaceWeight: getNumField(row, BRIS_FIELD.pp2ndPlaceWeight + i),
+          thirdPlace: getField(row, BRIS_FIELD.pp3rdPlaceName + i),
+          thirdPlaceWeight: getNumField(row, BRIS_FIELD.pp3rdPlaceWeight + i),
+          // Horse's performance
+          finishPosition: getField(row, BRIS_FIELD.ppFinishPos + i),
+          moneyPosition: getField(row, BRIS_FIELD.ppMoneyPos + i),
+          beatenLengths: (() => {
+            const v = getNumField(row, BRIS_FIELD.ppFinishBtnLngthsOnly + i);
+            if (v !== null) return v;
+            // If the horse won (finish = 1), beaten lengths = 0 even if the field is blank
+            const finish = getField(row, BRIS_FIELD.ppFinishPos + i);
+            if (finish === '1') return 0;
+            return null;
+          })(),
+          odds: getNumField(row, BRIS_FIELD.ppOdds + i),
+          weight: getNumField(row, BRIS_FIELD.ppWeight + i),
+          purse: getNumField(row, BRIS_FIELD.ppRacePurse + i),
+          finalTime: getNumField(row, BRIS_FIELD.ppFinalTime + i),
+          jockey: getField(row, BRIS_FIELD.ppJockey + i),
+          trainer: getField(row, BRIS_FIELD.ppTrainer + i),
+          apprenticeAllowance: getNumField(row, BRIS_FIELD.ppApprentice + i),
+          favorite: getNumField(row, BRIS_FIELD.ppFavorite + i) === 1,
+          fractions: [
+            getNumField(row, BRIS_FIELD.ppFraction1 + i),
+            getNumField(row, BRIS_FIELD.ppFraction2 + i),
+            getNumField(row, BRIS_FIELD.ppFraction3 + i)
+          ].filter(v => v !== null),
+          brisPace: {
+            pace2f: getNumField(row, BRIS_FIELD.ppBrisPace2f + i),
+            pace4f: getNumField(row, BRIS_FIELD.ppBrisPace4f + i),
+            pace6f: getNumField(row, BRIS_FIELD.ppBrisPace6f + i),
+            pace8f: getNumField(row, BRIS_FIELD.ppBrisPace8f + i),
+            pace10f: getNumField(row, BRIS_FIELD.ppBrisPace10f + i),
+            latePace: getNumField(row, BRIS_FIELD.ppBrisLatePace + i),
+            raceShape1: getNumField(row, BRIS_FIELD.ppBrisRaceShape1 + i),
+            raceShape2: getNumField(row, BRIS_FIELD.ppBrisRaceShape2 + i)
+          },
+          callPositions: {
+            start: getField(row, BRIS_FIELD.ppStartCallPos + i),
+            first: getField(row, BRIS_FIELD.pp1stCallPos + i),
+            second: getField(row, BRIS_FIELD.pp2ndCallPos + i),
+            gate: getField(row, BRIS_FIELD.ppGateCallPos + i),
+            stretch: getField(row, BRIS_FIELD.ppStretchCallPos + i)
+          },
+          beatenLengthsAtCall: {
+            start: getNumField(row, BRIS_FIELD.ppStartBtnLngthsOnly + i),
+            first: getNumField(row, BRIS_FIELD.pp1stBtnLngthsOnly + i),
+            second: getNumField(row, BRIS_FIELD.pp2ndBtnLngthsOnly + i),
+            stretch: getNumField(row, BRIS_FIELD.ppStretchBtnLngthsOnly + i)
+          }
+        };
+
+        // Build running line in DRF-ish format
+        const cp = pp.callPositions;
+        const bl = pp.beatenLengthsAtCall;
+        const seg = (pos, btn) => pos ? (btn != null && btn !== 0 ? `${pos}-${btn}` : pos) : null;
+        const parts = [];
+        const s1 = seg(cp.start, bl.start); if (s1) parts.push(s1);
+        const s2 = seg(cp.first, bl.first); if (s2) parts.push(s2);
+        const s3 = seg(cp.second, bl.second); if (s3) parts.push(s3);
+        const s4 = seg(cp.stretch, bl.stretch); if (s4) parts.push(s4);
+        if (pp.finishPosition) {
+          parts.push(`${pp.finishPosition}${pp.beatenLengths != null && pp.beatenLengths !== 0 ? `-${pp.beatenLengths}` : ''}`);
+        }
+        pp.runningLine = parts.join(' ');
+
+        // Build compact top-finishers string
+        const topFinishers = [];
+        if (pp.winner) topFinishers.push(`${pp.winner}${pp.winnerWeight ? ` ${pp.winnerWeight}` : ''}`);
+        if (pp.secondPlace) topFinishers.push(`${pp.secondPlace}${pp.secondPlaceWeight ? ` ${pp.secondPlaceWeight}` : ''}-${pp.winnerMargin || ''}`);
+        if (pp.thirdPlace) topFinishers.push(`${pp.thirdPlace}${pp.thirdPlaceWeight ? ` ${pp.thirdPlaceWeight}` : ''}`);
+        pp.topFinishers = topFinishers.join(' ');
+
+        horse.pastPerformances.push(pp);
+      }
+
+      // Parse workouts (12 back)
+      horse.workouts = [];
+      for (let i = 0; i < 12; i++) {
+        const wDate = getField(row, BRIS_FIELD.workoutDate + i);
+        if (!wDate) continue;
+        const wTime = getNumField(row, BRIS_FIELD.workoutTime + i);
+        const wDist = getNumField(row, BRIS_FIELD.workoutDistance + i);
+        horse.workouts.push({
+          date: wDate,
+          time: wTime,
+          bullet: wTime !== null && wTime < 0, // negative time = bullet work
+          track: getField(row, BRIS_FIELD.workoutTrack + i),
+          distanceYards: wDist,
+          distance: yardsToDistance(wDist),
+          condition: getField(row, BRIS_FIELD.workoutCondition + i),
+          description: getField(row, BRIS_FIELD.workoutDescription + i),
+          trackType: getField(row, BRIS_FIELD.workoutTrackType + i),
+          numWorks: getNumField(row, BRIS_FIELD.workoutNumWorks + i),
+          rank: getField(row, BRIS_FIELD.workoutRank + i)
+        });
+      }
+
+      return horse;
+    };
+
+    // Parse whole Brisnet file into { byRace: { raceNum: { trackName, horses: [...] } } }
+    const parseBrisnetFile = (text, trackSlug, expectedDate) => {
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+      const byRace = {};
+      let trackCode = null;
+      let parseErrors = [];
+
+      for (const line of lines) {
+        try {
+          const row = parseCSVLine(line);
+          const rowTrack = getField(row, BRIS_FIELD.track);
+          const rowRace = getNumField(row, BRIS_FIELD.raceNum);
+          const rowDate = getField(row, BRIS_FIELD.date);
+          if (!rowRace) continue;
+
+          if (!trackCode) trackCode = rowTrack;
+
+          if (!byRace[rowRace]) {
+            byRace[rowRace] = {
+              raceNumber: rowRace,
+              trackCode: rowTrack,
+              date: rowDate,
+              distance: yardsToDistance(getNumField(row, BRIS_FIELD.distanceYards)),
+              distanceYards: getNumField(row, BRIS_FIELD.distanceYards),
+              surface: surfaceCodeToName(getField(row, BRIS_FIELD.surface)),
+              raceType: raceTypeToName(getField(row, BRIS_FIELD.raceType)),
+              classification: getField(row, BRIS_FIELD.classification),
+              purse: getNumField(row, BRIS_FIELD.purse),
+              claimingPrice: getNumField(row, BRIS_FIELD.claimingPrice),
+              conditions: getField(row, BRIS_FIELD.raceConditions),
+              trackRecord: getNumField(row, BRIS_FIELD.trackRecord),
+              horses: []
+            };
+          }
+
+          const horse = parseBrisnetRow(row);
+          byRace[rowRace].horses.push(horse);
+        } catch (e) {
+          parseErrors.push(`Line: ${line.substring(0, 50)}... — ${e.message}`);
+        }
+      }
+
+      return { byRace, trackCode, parseErrors };
+    };
+
+    // Icons
+    const Icon = ({ children }) => (<svg className="icon" viewBox="0 0 24 24">{children}</svg>);
+    const IconFlower = () => <Icon><path d="M12 7.5a4.5 4.5 0 1 1 4.5 4.5M12 7.5A4.5 4.5 0 1 0 7.5 12M12 7.5V9m-4.5 3a4.5 4.5 0 1 0 4.5 4.5M7.5 12H9m7.5 0a4.5 4.5 0 1 1-4.5 4.5m4.5-4.5H15m-3 4.5V15m0 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z" /></Icon>;
+    const IconSparkle = () => <Icon><path d="M12 3l1.9 5.8L19.5 10l-5.6 1.9L12 17l-1.9-5.1L4.5 10l5.6-1.2L12 3z" /></Icon>;
+    const IconPlus = () => <Icon><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></Icon>;
+    const IconX = () => <Icon><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></Icon>;
+    const IconAlert = () => <Icon><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></Icon>;
+    const IconTrophy = () => <Icon><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /><path d="M4 22h16" /><path d="M10 14.66V17c0 .55.47.98.97 1.21C12.15 18.75 13 19.42 13 21" /><path d="M14 14.66V17c0 .55-.47.98-.97 1.21C11.85 18.75 11 19.42 11 21" /><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></Icon>;
+    const IconTrend = () => <Icon><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></Icon>;
+    const IconCopy = () => <Icon><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></Icon>;
+    const IconCheck = () => <Icon><polyline points="20 6 9 17 4 12" /></Icon>;
+    const IconRefresh = () => <Icon><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></Icon>;
+    const IconSearch = () => <Icon><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></Icon>;
+    const IconArrowLeft = () => <Icon><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></Icon>;
+    const IconEye = () => <Icon><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></Icon>;
+    const IconEyeOff = () => <Icon><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></Icon>;
+    const IconCamera = () => <Icon><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></Icon>;
+    const IconScan = () => <Icon><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><line x1="7" y1="12" x2="17" y2="12" /></Icon>;
+    const IconTrash = () => <Icon><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></Icon>;
+
+    const formatDate = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    // Read file to base64
+    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const callClaude = async ({ apiKey, modelId, prompt, imageData, useWebFetch = false, useWebSearch = false, maxTokens = 8000 }) => {
+      const tools = [];
+      const headers = {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey.trim(),
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      };
+      if (useWebFetch) { tools.push({ type: "web_fetch_20250910", name: "web_fetch", max_uses: 3 }); headers["anthropic-beta"] = "web-fetch-2025-09-10"; }
+      if (useWebSearch) tools.push({ type: "web_search_20250305", name: "web_search" });
+
+      // Build content - if images provided, use content array format
+      let content;
+      if (imageData && imageData.length > 0) {
+        content = [
+          ...imageData.map(img => ({
+            type: "image",
+            source: { type: "base64", media_type: img.mediaType, data: img.data }
+          })),
+          { type: "text", text: prompt }
+        ];
+      } else {
+        content = prompt;
+      }
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model: modelId,
+          max_tokens: maxTokens,
+          messages: [{ role: "user", content }],
+          tools: tools.length > 0 ? tools : undefined
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API ${response.status}: ${errText.slice(0, 400)}`);
+      }
+
+      const data = await response.json();
+      const textBlocks = data.content.filter(item => item.type === "text").map(item => item.text).join("\n");
+      let cleaned = textBlocks.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1) cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+      try { return { data: JSON.parse(cleaned), usage: data.usage }; }
+      catch (e) { console.error('Parse fail:', textBlocks); throw new Error(`Invalid JSON: ${textBlocks.slice(0, 200)}`); }
+    };
+
+    // SCAN MODAL — two-section design:
+    //   Section 1: Historical PP Data (Photo OCR OR Brisnet file)
+    //   Section 2: Live Tote Data (TwinSpires screenshot)
+    function ScanModal({ apiKey, track, date, race, allRaces, existingPP, existingOdds, onClose, onSaved }) {
+      // Last-used PP mode
+      const [ppMode, setPpMode] = useState(() => localStorage.getItem('postTime_scanMode') || 'photo');
+      useEffect(() => { localStorage.setItem('postTime_scanMode', ppMode); }, [ppMode]);
+
+      // Which section is expanded: 'pp' or 'odds'
+      const [expandedSection, setExpandedSection] = useState(existingPP ? 'odds' : 'pp');
+
+      // PP — photo mode state
+      const [ppImages, setPpImages] = useState([]);
+      const [ppPreviews, setPpPreviews] = useState([]);
+      const [ppDragging, setPpDragging] = useState(false);
+      const ppFileInputRef = useRef(null);
+
+      // PP — Brisnet mode state
+      const [brisnetFile, setBrisnetFile] = useState(null);
+      const [brisnetPreview, setBrisnetPreview] = useState(null);
+      const [importScope, setImportScope] = useState('all');
+      const brisnetInputRef = useRef(null);
+      const [brisnetDragging, setBrisnetDragging] = useState(false);
+
+      // Odds — screenshot mode state
+      const [oddsImages, setOddsImages] = useState([]);
+      const [oddsPreviews, setOddsPreviews] = useState([]);
+      const [oddsDragging, setOddsDragging] = useState(false);
+      const oddsFileInputRef = useRef(null);
+
+      // Shared
+      const [processing, setProcessing] = useState(false);
+      const [status, setStatus] = useState('');
+      const [error, setError] = useState(null);
+
+      // PP photo handlers
+      const handlePpFiles = async (fileList) => {
+        const newFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (newFiles.length === 0) return;
+        const newImages = [...ppImages, ...newFiles];
+        setPpImages(newImages);
+        const newPreviews = await Promise.all(newImages.map(f => new Promise(res => {
+          const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
+        })));
+        setPpPreviews(newPreviews);
+      };
+      const removePpImage = (idx) => {
+        setPpImages(ppImages.filter((_, i) => i !== idx));
+        setPpPreviews(ppPreviews.filter((_, i) => i !== idx));
+      };
+
+      // Brisnet handler
+      const handleBrisnetFile = async (file) => {
+        if (!file) return;
+        setBrisnetFile(file);
+        setError(null);
+        try {
+          const text = await file.text();
+          const { byRace, trackCode, parseErrors } = parseBrisnetFile(text, track.slug, date);
+          const raceCount = Object.keys(byRace).length;
+          const horseCount = Object.values(byRace).reduce((sum, r) => sum + r.horses.length, 0);
+          setBrisnetPreview({ raceCount, horseCount, trackCode, byRace, parseErrors });
+          if (raceCount === 0) setError('No races parsed from file. Is this a Brisnet Single PP CSV?');
+        } catch (e) {
+          setError(`Could not parse file: ${e.message}`);
+          setBrisnetPreview(null);
+        }
+      };
+
+      // Odds screenshot handlers
+      const handleOddsFiles = async (fileList) => {
+        const newFiles = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (newFiles.length === 0) return;
+        const newImages = [...oddsImages, ...newFiles];
+        setOddsImages(newImages);
+        const newPreviews = await Promise.all(newImages.map(f => new Promise(res => {
+          const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f);
+        })));
+        setOddsPreviews(newPreviews);
+      };
+      const removeOddsImage = (idx) => {
+        setOddsImages(oddsImages.filter((_, i) => i !== idx));
+        setOddsPreviews(oddsPreviews.filter((_, i) => i !== idx));
+      };
+
+      // Run PP photo extraction (vision)
+      const runPpPhotoExtraction = async () => {
+        if (ppImages.length === 0) { setError('Add at least one image'); return; }
+        setProcessing(true); setError(null); setStatus('Encoding images...');
+        try {
+          const imageData = await Promise.all(ppImages.map(async f => ({
+            mediaType: f.type, data: await fileToBase64(f)
+          })));
+          setStatus(`Reading ${ppImages.length} page${ppImages.length > 1 ? 's' : ''}...`);
+          const prompt = `You are a professional horse racing data extractor. The attached image(s) show past performance (PP) data from a DRF or Brisnet program for a specific race.
+
+RACE CONTEXT:
+- Track: ${track.name}
+- Date: ${date}
+- Race number: ${race.raceNumber}
+- Distance: ${race.distance}
+- Surface: ${race.surface}
+
+Extract every horse's PP data visible across the images. If you can't confidently read a value, use null. Do not guess.
+
+Return ONLY JSON:
+{
+  "trackName": "${track.name}",
+  "date": "${date}",
+  "raceNumber": ${race.raceNumber},
+  "horses": [
+    {
+      "postPosition": "1", "programNumber": "1", "horseName": "Name",
+      "jockey": "Jockey", "trainer": "Trainer", "morningLine": "10-1",
+      "weight": "126", "medication": "L", "age": 3,
+      "sire": "Sire", "dam": "Dam", "damSire": "Dam sire",
+      "owner": "Owner", "breeder": "Breeder",
+      "lifetimeRecord": { "starts": 6, "wins": 3, "places": 1, "shows": 1, "earnings": "$832,744", "topBeyer": 98 },
+      "pastPerformances": [
+        {
+          "date": "16Apr11", "track": "CD", "raceNum": 10, "condition": "fst",
+          "distance": "1 1/8", "fractions": [":46","1:11","1:36","1:49"],
+          "raceType": "ArkDerby-G1", "beyerFig": 98, "postPosition": 10,
+          "runningLine": "10 10-9¾ 9¾ 7-3¾ 3-2 1-nk", "finishPosition": 1,
+          "beatenLengths": "nk", "jockey": "Court J K", "weight": 122,
+          "odds": "25.20", "tripComment": "4w gain, late bid, held"
+        }
+      ],
+      "workouts": [{ "date": "May3", "track": "CD", "distance": "4F", "surface": "sly", "time": ":52 B", "rank": "24/30", "bullet": false }],
+      "trainerStats": { "dirt": { "runners": 207, "winPct": 0.12, "roi": 1.84 } }
+    }
+  ],
+  "extractionNotes": "Any issues"
+}
+
+Preserve trip comments verbatim. Return valid JSON only.`;
+          const { data } = await callClaude({ apiKey, modelId: MODELS.sonnet.id, prompt, imageData, maxTokens: 16000 });
+          data.source = 'photo';
+          setStatus('Saving...');
+          if (!savePPData(track.slug, date, race.raceNumber, data)) throw new Error('Local storage full?');
+          onSaved({ type: 'pp', data });
+          resetPpState();
+          setExpandedSection('odds');
+          setProcessing(false);
+          setStatus('');
+        } catch (err) {
+          console.error(err);
+          setError(`Photo scan failed: ${err.message}`);
+          setProcessing(false); setStatus('');
+        }
+      };
+
+      // Run Brisnet import
+      const runBrisnetImport = async () => {
+        if (!brisnetPreview) { setError('Select a Brisnet file first'); return; }
+        setProcessing(true); setError(null); setStatus('Importing...');
+        try {
+          const { byRace } = brisnetPreview;
+          let savedCount = 0;
+          const racesToSave = importScope === 'all'
+            ? Object.keys(byRace).map(Number)
+            : [race.raceNumber];
+
+          for (const raceNum of racesToSave) {
+            const raceData = byRace[raceNum];
+            if (!raceData) continue;
+            const payload = {
+              source: 'brisnet',
+              trackName: track.name,
+              date,
+              raceNumber: raceNum,
+              raceInfo: {
+                distance: raceData.distance,
+                surface: raceData.surface,
+                raceType: raceData.raceType,
+                classification: raceData.classification,
+                purse: raceData.purse,
+                conditions: raceData.conditions
+              },
+              horses: raceData.horses
+            };
+            if (savePPData(track.slug, date, raceNum, payload)) savedCount++;
+          }
+          setStatus(`Saved ${savedCount} race${savedCount !== 1 ? 's' : ''}`);
+          onSaved({ type: 'pp' });
+          setTimeout(() => { setProcessing(false); setExpandedSection('odds'); setStatus(''); }, 600);
+        } catch (err) {
+          console.error(err);
+          setError(`Import failed: ${err.message}`);
+          setProcessing(false); setStatus('');
+        }
+      };
+
+      // Run odds screenshot extraction (vision)
+      const runOddsExtraction = async () => {
+        if (oddsImages.length === 0) { setError('Add a tote screenshot'); return; }
+        setProcessing(true); setError(null); setStatus('Reading tote data...');
+        try {
+          const imageData = await Promise.all(oddsImages.map(async f => ({
+            mediaType: f.type, data: await fileToBase64(f)
+          })));
+          const prompt = `You are a professional horse racing tote-board reader. The attached image(s) show LIVE TOTE/BETTING data — odds, pool percentages, odds movement — from TwinSpires, NYRA Bets, the track's tote board, or a similar source.
+
+RACE CONTEXT:
+- Track: ${track.name}
+- Date: ${date}
+- Race number: ${race.raceNumber}
+
+Extract the current odds for every horse visible. Include odds-movement indicators (up/down arrows) and pool percentage if shown.
+
+Return ONLY JSON:
+{
+  "trackName": "${track.name}",
+  "date": "${date}",
+  "raceNumber": ${race.raceNumber},
+  "source": "TwinSpires" | "NYRA" | "Track Board" | "Other",
+  "horses": [
+    {
+      "postPosition": "1",
+      "horseName": "Name",
+      "currentOdds": "8/5",
+      "morningLine": "2",
+      "poolPercentage": 3,
+      "oddsDirection": "up" | "down" | "steady" | null
+    }
+  ],
+  "captureNotes": "Approximate minutes to post if visible, e.g. 'MTP 27' or 'Live, 5 min to post'"
+}
+
+RULES:
+- currentOdds should be the fractional format shown (e.g. "8/5", "22", "7/2")
+- oddsDirection: "up" = drifting (green up arrow, public backing off), "down" = shortening (red down arrow, money coming in), "steady" = no change
+- If you can't read a value, use null. Do not guess.
+- If the screenshot shows multiple races, only extract Race ${race.raceNumber}.
+- Return valid JSON only.`;
+          const { data } = await callClaude({ apiKey, modelId: MODELS.sonnet.id, prompt, imageData, maxTokens: 4000 });
+
+          // Store odds with timestamp
+          const oddsPayload = {
+            capturedAt: new Date().toISOString(),
+            source: data.source || 'TwinSpires',
+            captureNotes: data.captureNotes,
+            horses: data.horses || []
+          };
+          if (!saveOddsData(track.slug, date, race.raceNumber, oddsPayload)) throw new Error('Local storage full?');
+          onSaved({ type: 'odds', data: oddsPayload });
+          setStatus('Odds saved');
+          setTimeout(() => onClose(), 600);
+        } catch (err) {
+          console.error(err);
+          setError(`Odds scan failed: ${err.message}`);
+          setProcessing(false); setStatus('');
+        }
+      };
+
+      const resetPpState = () => {
+        setPpImages([]); setPpPreviews([]);
+        setBrisnetFile(null); setBrisnetPreview(null);
+      };
+
+      const clearExistingPP = () => {
+        if (!confirm('Delete saved PP data for this race?')) return;
+        localStorage.removeItem(ppStorageKey(track.slug, date, race.raceNumber));
+        onSaved({ type: 'pp', cleared: true });
+        onClose();
+      };
+
+      const clearExistingOdds = () => {
+        if (!confirm('Delete saved tote odds for this race?')) return;
+        deleteOddsData(track.slug, date, race.raceNumber);
+        onSaved({ type: 'odds', cleared: true });
+        onClose();
+      };
+
+      const oddsAge = existingOdds?.capturedAt
+        ? (() => {
+            const mins = Math.round((Date.now() - new Date(existingOdds.capturedAt).getTime()) / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins} min ago`;
+            const hrs = Math.floor(mins / 60);
+            return `${hrs}h ${mins % 60}m ago`;
+          })()
+        : null;
+
+      return (
+        <div className="modal-backdrop" onClick={(e) => { if (e.target.className === 'modal-backdrop' && !processing) onClose(); }}>
+          <div className="modal">
+            <div className="modal-header">
+              <div>
+                <div className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#fda4af', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Race Data</div>
+                <div className="modal-title">Race {race.raceNumber} — {track.name}</div>
+              </div>
+              <button className="modal-close" onClick={onClose} disabled={processing}><IconX /></button>
+            </div>
+
+            {/* Section 1: Historical PP */}
+            <div className={`data-section ${expandedSection === 'pp' ? 'expanded' : 'collapsed'}`}>
+              <button
+                className="section-header"
+                onClick={() => !processing && setExpandedSection(expandedSection === 'pp' ? null : 'pp')}
+                disabled={processing}
+              >
+                <div className="section-title">
+                  <span className="section-num">1</span>
+                  <div>
+                    <div className="section-name">Historical PP Data</div>
+                    <div className="section-sub">
+                      {existingPP
+                        ? `✓ Loaded (${existingPP.horses?.length || 0} horses, ${existingPP.source === 'brisnet' ? '📊 Brisnet' : '📷 Photo'})`
+                        : 'Program photos or Brisnet file — for picks'}
+                    </div>
+                  </div>
+                </div>
+                <span className="section-chevron">{expandedSection === 'pp' ? '−' : '+'}</span>
+              </button>
+
+              {expandedSection === 'pp' && (
+                <div className="section-body">
+                  {existingPP && (
+                    <div className="scanned-summary">
+                      <strong>✓ Already loaded</strong> — {existingPP.horses?.length || 0} horses ({existingPP.source === 'brisnet' ? '📊 Brisnet' : '📷 Photo scan'}).
+                      {' '}Replace below, or <button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExistingPP}>delete</button>.
+                    </div>
+                  )}
+
+                  <div className="mode-toggle">
+                    <button className={`mode-btn ${ppMode === 'photo' ? 'active' : ''}`} onClick={() => { setPpMode('photo'); setError(null); }} disabled={processing}>
+                      <div>📷 Program Photos<span className="mode-sub">Free · OCR accuracy varies</span></div>
+                    </button>
+                    <button className={`mode-btn ${ppMode === 'brisnet' ? 'active' : ''}`} onClick={() => { setPpMode('brisnet'); setError(null); }} disabled={processing}>
+                      <div>📊 Brisnet File<span className="mode-sub">~$3 · Reliable</span></div>
+                    </button>
+                  </div>
+
+                  {ppMode === 'photo' && (
+                    <>
+                      <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+                        Clear photos of the PP page(s) for Race {race.raceNumber}. Multiple close-up shots work better than one wide shot.
+                      </p>
+                      <label
+                        className={`upload-zone ${ppDragging ? 'dragging' : ''}`}
+                        onClick={() => ppFileInputRef.current?.click()}
+                        onDragOver={(e) => { e.preventDefault(); setPpDragging(true); }}
+                        onDragLeave={() => setPpDragging(false)}
+                        onDrop={(e) => { e.preventDefault(); setPpDragging(false); handlePpFiles(e.dataTransfer.files); }}
+                      >
+                        <IconCamera />
+                        <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem' }}>Tap to add photos</div>
+                        <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>{ppImages.length} added</div>
+                        <input ref={ppFileInputRef} type="file" accept="image/*" multiple capture="environment" onChange={(e) => handlePpFiles(e.target.files)} disabled={processing} />
+                      </label>
+                      {ppPreviews.length > 0 && (
+                        <div className="image-preview-grid">
+                          {ppPreviews.map((src, idx) => (
+                            <div key={idx} className="image-preview">
+                              <img src={src} alt={`Page ${idx + 1}`} />
+                              <div className="img-num">{idx + 1}</div>
+                              {!processing && <button className="remove-img" onClick={() => removePpImage(idx)}><IconX /></button>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {!processing && (
+                        <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #6ee7b7, #34d399, #6ee7b7)', marginTop: '0.5rem' }} onClick={runPpPhotoExtraction} disabled={ppImages.length === 0}>
+                          <IconScan /> Extract from {ppImages.length} photo{ppImages.length !== 1 ? 's' : ''}
+                        </button>
+                      )}
+                      <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+                        Sonnet 4.5 vision · ~$0.05-$0.15 per page
+                      </p>
+                    </>
+                  )}
+
+                  {ppMode === 'brisnet' && (
+                    <>
+                      <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+                        Upload a Brisnet Single PP file (.csv/.drf) for {track.name} on {date}. One file = whole card. Get one at <a href="https://www.brisnet.com" target="_blank" style={{ color: '#fcd34d' }}>brisnet.com</a> — ~$3/card.
+                      </p>
+                      {!brisnetFile && (
+                        <label
+                          className={`brisnet-zone ${brisnetDragging ? 'dragging' : ''}`}
+                          onClick={() => brisnetInputRef.current?.click()}
+                          onDragOver={(e) => { e.preventDefault(); setBrisnetDragging(true); }}
+                          onDragLeave={() => setBrisnetDragging(false)}
+                          onDrop={(e) => { e.preventDefault(); setBrisnetDragging(false); if (e.dataTransfer.files[0]) handleBrisnetFile(e.dataTransfer.files[0]); }}
+                        >
+                          <div style={{ fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#fcd34d' }}>📊 Tap to select Brisnet file</div>
+                          <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>.csv or .drf format</div>
+                          <input ref={brisnetInputRef} type="file" accept=".csv,.drf,.txt,text/*" onChange={(e) => handleBrisnetFile(e.target.files?.[0])} disabled={processing} />
+                        </label>
+                      )}
+                      {brisnetFile && brisnetPreview && (
+                        <div className="brisnet-file-info">
+                          <strong>{brisnetFile.name}</strong>
+                          <div style={{ marginTop: '0.4rem' }}>
+                            Track: <code style={{ color: '#fcd34d' }}>{brisnetPreview.trackCode}</code> · {brisnetPreview.raceCount} race{brisnetPreview.raceCount !== 1 ? 's' : ''} · {brisnetPreview.horseCount} horses
+                          </div>
+                          {brisnetPreview.parseErrors?.length > 0 && (
+                            <div style={{ color: '#fb7185', fontSize: '0.75rem', marginTop: '0.4rem' }}>{brisnetPreview.parseErrors.length} parse warning(s)</div>
+                          )}
+                          <button style={{ background: 'none', border: 'none', color: '#a8a29e', textDecoration: 'underline', cursor: 'pointer', font: 'inherit', fontSize: '0.8rem', marginTop: '0.5rem', padding: 0 }} onClick={() => { setBrisnetFile(null); setBrisnetPreview(null); }}>Pick different file</button>
+                        </div>
+                      )}
+                      {brisnetPreview && brisnetPreview.raceCount > 1 && (
+                        <div>
+                          <label>Import scope</label>
+                          <div className="scope-toggle" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                            <label><input type="radio" checked={importScope === 'all'} onChange={() => setImportScope('all')} disabled={processing} /> Whole card ({brisnetPreview.raceCount} races) — recommended</label>
+                            <label><input type="radio" checked={importScope === 'this'} onChange={() => setImportScope('this')} disabled={processing} /> Just Race {race.raceNumber}</label>
+                          </div>
+                        </div>
+                      )}
+                      {!processing && (
+                        <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #fcd34d, #fbbf24, #fcd34d)', marginTop: '0.5rem' }} onClick={runBrisnetImport} disabled={!brisnetPreview}>
+                          <IconScan /> Import {importScope === 'all' && brisnetPreview ? `${brisnetPreview.raceCount} Races` : `Race ${race.raceNumber}`}
+                        </button>
+                      )}
+                      <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+                        Parsed locally · No API cost
+                      </p>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Section 2: Live Tote Odds */}
+            <div className={`data-section ${expandedSection === 'odds' ? 'expanded' : 'collapsed'}`}>
+              <button
+                className="section-header"
+                onClick={() => !processing && setExpandedSection(expandedSection === 'odds' ? null : 'odds')}
+                disabled={processing}
+              >
+                <div className="section-title">
+                  <span className="section-num">2</span>
+                  <div>
+                    <div className="section-name">Live Tote Odds <span style={{ color: '#78716c', fontWeight: 'normal', fontSize: '0.75rem' }}>(optional)</span></div>
+                    <div className="section-sub">
+                      {existingOdds
+                        ? `✓ ${existingOdds.horses?.length || 0} horses, captured ${oddsAge}`
+                        : 'TwinSpires screenshot — enables overlay detection'}
+                    </div>
+                  </div>
+                </div>
+                <span className="section-chevron">{expandedSection === 'odds' ? '−' : '+'}</span>
+              </button>
+
+              {expandedSection === 'odds' && (
+                <div className="section-body">
+                  {existingOdds && (
+                    <div className="scanned-summary" style={{ background: 'rgba(252, 211, 77, 0.08)', borderColor: 'rgba(252, 211, 77, 0.3)' }}>
+                      <strong style={{ color: '#fcd34d' }}>✓ Odds captured {oddsAge}</strong> from {existingOdds.source}. Odds change up to post time — re-snap closer to post for best accuracy.
+                      {' '}<button style={{ background: 'none', border: 'none', color: '#fb7185', textDecoration: 'underline', cursor: 'pointer', font: 'inherit' }} onClick={clearExistingOdds}>delete</button>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: '0.875rem', color: '#a8a29e', marginBottom: '1rem', fontStyle: 'italic' }}>
+                    Screenshot the TwinSpires <strong>Advanced</strong> tab (or any tote display) showing live odds for this race. The app will extract odds and flag overlays in the analysis.
+                  </p>
+
+                  <label
+                    className={`upload-zone ${oddsDragging ? 'dragging' : ''}`}
+                    style={{ borderColor: oddsDragging ? '#fcd34d' : undefined }}
+                    onClick={() => oddsFileInputRef.current?.click()}
+                    onDragOver={(e) => { e.preventDefault(); setOddsDragging(true); }}
+                    onDragLeave={() => setOddsDragging(false)}
+                    onDrop={(e) => { e.preventDefault(); setOddsDragging(false); handleOddsFiles(e.dataTransfer.files); }}
+                  >
+                    <IconCamera />
+                    <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem' }}>Tap to add tote screenshot</div>
+                    <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>{oddsImages.length} added</div>
+                    <input ref={oddsFileInputRef} type="file" accept="image/*" multiple onChange={(e) => handleOddsFiles(e.target.files)} disabled={processing} />
+                  </label>
+
+                  {oddsPreviews.length > 0 && (
+                    <div className="image-preview-grid">
+                      {oddsPreviews.map((src, idx) => (
+                        <div key={idx} className="image-preview">
+                          <img src={src} alt={`Odds ${idx + 1}`} />
+                          <div className="img-num">{idx + 1}</div>
+                          {!processing && <button className="remove-img" onClick={() => removeOddsImage(idx)}><IconX /></button>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {!processing && (
+                    <button className="primary-btn" style={{ background: 'linear-gradient(90deg, #fcd34d, #fbbf24, #fcd34d)', marginTop: '0.5rem' }} onClick={runOddsExtraction} disabled={oddsImages.length === 0}>
+                      <IconScan /> Extract Odds ({oddsImages.length} image{oddsImages.length !== 1 ? 's' : ''})
+                    </button>
+                  )}
+
+                  <p style={{ fontSize: '0.75rem', color: '#57534e', marginTop: '1rem', textAlign: 'center', fontStyle: 'italic' }}>
+                    Sonnet 4.5 vision · ~$0.05 per screenshot · Tote text is big, OCR very reliable
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {processing && (
+              <div style={{ textAlign: 'center', padding: '1rem 0', color: '#6ee7b7', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <div className="spinner-mint"></div> {status}
+              </div>
+            )}
+
+            {error && <div className="error-box"><IconAlert /><div>{error}</div></div>}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [view, setView] = useState('home');
+      const [apiKey, setApiKey] = useState(() => localStorage.getItem('postTime_apiKey') || '');
+      const [selectedDate, setSelectedDate] = useState(() => formatDate(new Date()));
+      const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('postTime_model') || 'sonnet');
+
+      const [tracksForDay, setTracksForDay] = useState(null);
+      const [selectedTrack, setSelectedTrack] = useState(null);
+      const [raceCard, setRaceCard] = useState(null);
+      const [selectedRace, setSelectedRace] = useState(null);
+      const [entries, setEntries] = useState(null);
+      const [horses, setHorses] = useState([]);
+      const [conditions, setConditions] = useState(null);
+      const [conditionsLoading, setConditionsLoading] = useState(false);
+      const [analysis, setAnalysis] = useState(null);
+      const [showReasoning, setShowReasoning] = useState(false);
+
+      // Scan state
+      const [scannedRaces, setScannedRaces] = useState(new Map());
+      const [scanModalRace, setScanModalRace] = useState(null);
+      const [currentPP, setCurrentPP] = useState(null);
+      const [currentOdds, setCurrentOdds] = useState(null);
+
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [progress, setProgress] = useState('');
+      const [progressSteps, setProgressSteps] = useState([]);
+      const [copied, setCopied] = useState(false);
+
+      useEffect(() => { if (apiKey) localStorage.setItem('postTime_apiKey', apiKey); }, [apiKey]);
+      useEffect(() => { localStorage.setItem('postTime_model', selectedModel); }, [selectedModel]);
+
+      // When track changes, refresh the set of races that have been scanned
+      useEffect(() => {
+        if (selectedTrack) setScannedRaces(getRacesWithPP(selectedTrack.slug, selectedDate));
+      }, [selectedTrack, selectedDate]);
+
+      // When a race is selected, load its PP data and live odds if any
+      useEffect(() => {
+        if (selectedTrack && selectedRace) {
+          setCurrentPP(loadPPData(selectedTrack.slug, selectedDate, selectedRace.raceNumber));
+          setCurrentOdds(loadOddsData(selectedTrack.slug, selectedDate, selectedRace.raceNumber));
+        } else {
+          setCurrentPP(null);
+          setCurrentOdds(null);
+        }
+      }, [selectedTrack, selectedRace, selectedDate]);
+
+      const dateOptions = [];
+      for (let i = 0; i < 8; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() + i);
+        dateOptions.push({
+          value: formatDate(d),
+          label: i === 0 ? `Today, ${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                : i === 1 ? `Tomorrow, ${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        });
+      }
+
+      const fetchTracksForDay = async () => {
+        if (!apiKey.trim()) { setError('Add your Anthropic API key first'); return; }
+        setLoading(true); setError(null); setTracksForDay(null);
+        setProgress('Finding tracks racing on this date...');
+        try {
+          const url = `https://entries.horseracingnation.com/entries-results/${selectedDate}`;
+          const prompt = `Fetch this URL: ${url}
+
+It lists all North American thoroughbred tracks running on ${selectedDate}. Parse the "Tracks" table. Skip harness tracks.
+
+Return ONLY valid JSON:
+{ "date": "${selectedDate}", "tracks": [{ "name": "Track Name", "slug": "track-slug-as-in-url", "firstPost": "12:40 PM", "totalRaces": 10, "avgFieldSize": 7.4, "totalPurses": "$221,000" }] }
+
+The slug must match the URL path used in HTML links. Return valid JSON only.`;
+          const { data } = await callClaude({ apiKey, modelId: MODELS.haiku.id, prompt, useWebFetch: true });
+          setTracksForDay(data);
+          setView('tracks');
+        } catch (err) {
+          setError(`Could not fetch tracks: ${err.message}`);
+        } finally { setLoading(false); setProgress(''); }
+      };
+
+      const fetchRaceCard = async (track) => {
+        setSelectedTrack(track);
+        setLoading(true); setError(null); setRaceCard(null);
+        setProgress(`Loading ${track.name} race card...`);
+        try {
+          const url = `https://entries.horseracingnation.com/entries-results/${track.slug}/${selectedDate}`;
+          const prompt = `Fetch: ${url}
+Parse the full race card. Return ONLY JSON:
+{ "trackName": "${track.name}", "date": "${selectedDate}", "races": [{ "raceNumber": 1, "postTime": "12:40 PM", "distance": "6 1/2 Furlongs", "surface": "Dirt", "raceName": "Race 1 or stakes name", "conditions": "Brief conditions", "purse": "$7,500", "fieldSize": 9, "isStakes": false }] }
+Return valid JSON only.`;
+          const { data } = await callClaude({ apiKey, modelId: MODELS.haiku.id, prompt, useWebFetch: true });
+          setRaceCard(data);
+          setView('races');
+        } catch (err) {
+          setError(`Could not fetch race card: ${err.message}`);
+        } finally { setLoading(false); setProgress(''); }
+      };
+
+      const fetchEntries = async (race) => {
+        setSelectedRace(race);
+        setLoading(true); setError(null); setEntries(null); setConditions(null);
+        setProgress(`Loading entries for Race ${race.raceNumber}...`);
+        try {
+          const entriesUrl = `https://entries.horseracingnation.com/entries-results/${selectedTrack.slug}/${selectedDate}#race-${race.raceNumber}`;
+          const entriesPrompt = `Fetch: ${entriesUrl}
+Extract Race ${race.raceNumber} at ${selectedTrack.name} on ${selectedDate}. Return ONLY JSON:
+{ "raceNumber": ${race.raceNumber}, "trackName": "${selectedTrack.name}", "distance": "${race.distance}", "surface": "${race.surface}", "conditions": "Full conditions", "purse": "${race.purse || ''}", "entries": [{ "postPosition": "1", "programNumber": "1", "horseName": "Name", "jockey": "Jockey", "trainer": "Trainer", "morningLine": "5-2", "weight": "118", "scratched": false }], "notes": "Scratches, etc." }
+Return valid JSON only.`;
+
+          const entriesPromise = callClaude({ apiKey, modelId: MODELS.haiku.id, prompt: entriesPrompt, useWebFetch: true });
+          setConditionsLoading(true);
+          const conditionsPromise = fetchConditionsInternal(race);
+
+          const [entriesResult, conditionsResult] = await Promise.allSettled([entriesPromise, conditionsPromise]);
+          if (entriesResult.status === 'rejected') throw entriesResult.reason;
+
+          const entriesData = entriesResult.value.data;
+          setEntries(entriesData);
+          setHorses(entriesData.entries.filter(e => !e.scratched).map(e => ({
+            postPosition: e.postPosition, name: e.horseName, jockey: e.jockey || '', trainer: e.trainer || '', morningLine: e.morningLine || ''
+          })));
+          if (conditionsResult.status === 'fulfilled') setConditions(conditionsResult.value);
+
+          setView('entries');
+        } catch (err) {
+          setError(`Could not fetch entries: ${err.message}`);
+        } finally { setLoading(false); setConditionsLoading(false); setProgress(''); }
+      };
+
+      const fetchConditionsInternal = async (race) => {
+        const prompt = `Research live track conditions for ${selectedTrack.name} on ${selectedDate}.
+Use web_search for: current track condition (Fast/Good/Sloppy/Muddy or Firm/Good/Yielding/Soft), today's weather, rail position, and how earlier races have been playing.
+
+Return ONLY JSON:
+{ "dirtCondition": null, "turfCondition": null, "weather": "67°F...", "railPosition": null, "earlyResults": "Race 1 (6F): speed held..." or "Not enough races yet", "playingNote": "Speed holding on dirt", "dataFreshness": "As of 2:45 PM ET" }
+Use null for any field you can't determine. Return valid JSON only.`;
+        const { data } = await callClaude({ apiKey, modelId: MODELS.haiku.id, prompt, useWebSearch: true });
+        return data;
+      };
+
+      const refreshConditions = async () => {
+        if (!selectedRace) return;
+        setConditionsLoading(true);
+        try { const data = await fetchConditionsInternal(selectedRace); setConditions(data); }
+        catch (err) { console.error(err); }
+        finally { setConditionsLoading(false); }
+      };
+
+      const runAnalysis = async () => {
+        const validHorses = horses.filter(h => h.name.trim());
+        if (validHorses.length < 2) { setError('Need at least 2 horses'); return; }
+
+        setLoading(true); setError(null); setAnalysis(null);
+        const model = MODELS[selectedModel];
+        const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Researching ${h.name}`, status: 'pending' }));
+        steps.push({ id: 'synthesis', label: 'Pace projection, picks, exotics (synthesis)', status: 'pending' });
+        setProgressSteps(steps);
+
+        try {
+          const conditionsContext = conditions ? `
+LIVE TRACK CONDITIONS:
+- Dirt: ${conditions.dirtCondition || 'N/A'}
+- Turf: ${conditions.turfCondition || 'N/A'}
+- Weather: ${conditions.weather || 'N/A'}
+- Rail: ${conditions.railPosition || 'Default'}
+- Playing: ${conditions.playingNote || 'Insufficient data'}
+- Early results: ${conditions.earlyResults || 'N/A'}
+` : '';
+
+          // Phase 1: per-horse research, with PP data injected if available
+          const horseResearch = [];
+          const concurrency = 3;
+          for (let i = 0; i < validHorses.length; i += concurrency) {
+            const batch = validHorses.slice(i, i + concurrency);
+            const batchResults = await Promise.all(batch.map(async (h, batchIdx) => {
+              const stepIdx = i + batchIdx;
+              setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'active' } : s));
+
+              // Find this horse in PP data (name match)
+              const ppHorse = currentPP?.horses?.find(pph =>
+                pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim() ||
+                pph.postPosition === h.postPosition
+              );
+
+              let ppContext = '';
+              if (ppHorse) {
+                const recentPPs = (ppHorse.pastPerformances || []).slice(0, 5);
+                const sourceLabel = currentPP.source === 'brisnet' ? '📊 BRISNET DATA FILE (structured, authoritative)' : '📷 SCANNED PROGRAM PAGES (OCR may be imperfect)';
+                const primePowerLine = ppHorse.brisPrimePower
+                  ? `\n- 🔑 BRIS Prime Power: ${ppHorse.brisPrimePower} (Brisnet's flagship composite rating — strong predictor)`
+                  : '';
+                // Brisnet-only: pre-computed running style (E/EP/P/S) and Quirin speed points (0-8)
+                const runStyleLine = ppHorse.brisRunStyle
+                  ? `\n- 🏇 BRIS Run Style: ${ppHorse.brisRunStyle} (E=front, EP=press, P=stalk, S=close)`
+                  : '';
+                const quirinLine = ppHorse.quirinSpeedPoints != null
+                  ? `\n- Quirin Speed Points: ${ppHorse.quirinSpeedPoints}/8 (higher = more early speed; 5+ is tactical)`
+                  : '';
+                const bestSpeedsLine = ppHorse.brisSpeedFigures
+                  ? `\n- Best BRIS Speed figures: life=${ppHorse.brisSpeedFigures.bestLife ?? '?'}, this year=${ppHorse.brisSpeedFigures.bestYear ?? '?'}, fast=${ppHorse.brisSpeedFigures.bestFast ?? '?'}, turf=${ppHorse.brisSpeedFigures.bestTurf ?? '?'}, off=${ppHorse.brisSpeedFigures.bestOff ?? '?'}, this-distance=${ppHorse.brisSpeedFigures.bestDistance ?? '?'}`
+                  : '';
+                const pedigreeRatingsLine = ppHorse.pedigreeRatings
+                  ? `\n- BRIS pedigree ratings: dirt=${ppHorse.pedigreeRatings.dirt || '?'}, mud=${ppHorse.pedigreeRatings.mud || '?'}, turf=${ppHorse.pedigreeRatings.turf || '?'}, dist=${ppHorse.pedigreeRatings.distance || '?'}`
+                  : '';
+                const trainerAnglesLine = (ppHorse.trainerAngles && ppHorse.trainerAngles.length)
+                  ? `\n- Trainer angles today: ${ppHorse.trainerAngles.map(a => `[${a.label}: ${a.starts} starts, ${a.winPct}% win, $${a.roi} ROI]`).join(' ')}`
+                  : '';
+
+                ppContext = `
+PROGRAM PP DATA — ${sourceLabel}:
+- Lifetime: ${JSON.stringify(ppHorse.lifetimeRecord)}
+- At this track: ${JSON.stringify(ppHorse.trackRecord)}
+- At this distance: ${JSON.stringify(ppHorse.distanceRecord)}
+- Turf record: ${JSON.stringify(ppHorse.turfRecord || {})}
+- Wet record: ${JSON.stringify(ppHorse.wetRecord || {})}${primePowerLine}${runStyleLine}${quirinLine}${bestSpeedsLine}${pedigreeRatingsLine}${trainerAnglesLine}
+- Days since last race: ${ppHorse.daysSinceLastRace ?? '?'}
+- Pedigree: by ${ppHorse.sire || '?'} out of ${ppHorse.dam || '?'} (${ppHorse.damSire ? `${ppHorse.damSire} line` : 'dam sire unknown'})
+- Medication: ${ppHorse.medication || 'none'} | Equipment change: ${ppHorse.equipmentChange || 'none'}
+- Recent races (most recent first):
+${recentPPs.map((pp, idx) => `  ${idx+1}. ${pp.date} ${pp.track || pp.trackCode} R${pp.raceNum}, ${pp.condition} ${pp.distance || pp.distanceYards + 'y'} ${pp.surface}, ${pp.raceType}${pp.raceClassification ? ` (${pp.raceClassification})` : ''}
+     BRIS Speed: ${pp.beyerFig ?? '?'} | Finish: ${pp.finishPosition ?? '?'} by ${pp.beatenLengths ?? '?'} L | Post: ${pp.postPosition ?? '?'} | Field: ${pp.numEntrants ?? '?'}
+     Running line: ${pp.runningLine || 'n/a'}
+     Fractions: ${(pp.fractions || []).join(' ')} | Final time: ${pp.finalTime ?? '?'}${pp.brisPace?.latePace ? ` | Late pace: ${pp.brisPace.latePace}` : ''}
+     Jockey: ${pp.jockey || '?'} @ ${pp.weight ?? '?'}lbs, Odds: ${pp.odds || '?'}${pp.favorite ? ' (was favorite)' : ''}${pp.tripComment ? `\n     🔔 Trip comment: "${pp.tripComment}"` : ''}${pp.topFinishers ? `\n     Top finishers: ${pp.topFinishers}` : ''}`).join('\n')}
+- Workouts (last 6): ${(ppHorse.workouts || []).slice(0, 6).map(w => `${w.date} ${w.track || ''} ${w.distance || ''} in ${w.time ?? '?'}${w.bullet ? ' ★BULLET' : ''} (${w.description || ''})${w.rank ? ` ${w.rank}` : ''}`).join(' | ') || 'none'}
+- Trainer stats (meet): ${JSON.stringify(ppHorse.trainerStats?.meet || {})}
+- Trainer stats (YTD): ${JSON.stringify(ppHorse.trainerStats?.currentYear || {})}
+- J/T combo (meet): ${JSON.stringify(ppHorse.jockeyTrainerCombo?.meet || {})}
+- J/T combo (365d): ${JSON.stringify(ppHorse.jockeyTrainerCombo?.last365 || {})}
+
+ANALYZE THIS PP DATA DIRECTLY. Key signals, in priority order:
+1. **BRIS Prime Power** (if present) is Brisnet's flagship composite — the single best predictor. Rank horses against field.
+2. **BRIS Run Style + Quirin Speed Points** — these pre-compute pace projection. Count the Es and EPs in the field; high Quirin points = more early speed.
+3. **Trip comments** (wide, steadied, blocked, checked, bumped, greened, rank) = classic overlay signal if horse finished close despite trouble. Flag in tripNote.
+4. **Speed figure trajectory** (going up, flat, regressing) matters as much as best fig.
+5. **Trainer angles** — when a specific pre-computed angle (e.g. "WonLastStart", "1stLasix", "Layoff45+") shows an ROI > $2.00 with 20+ starts, that's predictive.
+6. **Workout pattern** — bullets, sharp half-mile times, tight sequence = positive. Nothing fast = lukewarm.
+7. **Layoff angle** — daysSinceLastRace > 45 paired with sharp works or a trainer with good off-layoff ROI.`;
+              }
+
+              const horsePrompt = `You are a professional horse racing handicapper. Research this horse and return detailed analysis.
+
+HORSE: ${h.name} — Post ${h.postPosition}
+JOCKEY: ${h.jockey} | TRAINER: ${h.trainer} | ML: ${h.morningLine}
+
+RACE: ${selectedTrack.name} Race ${selectedRace.raceNumber}, ${selectedRace.distance} ${selectedRace.surface}
+CONDITIONS: ${entries?.conditions || ''}
+${conditionsContext}
+${ppContext}
+
+${ppHorse ? 'Since PP data is provided above, lean heavily on it. Web search only for news/equipment changes since the last PP.' : 'No PP data available — use web_search for recent past performances and speed figures.'}
+
+Research priorities:
+1. Last 3-5 race finishes with Beyer/speed figures
+2. Running style (E = early speed, EP = early presser, P = presser/stalker, S = closer)
+3. Distance/surface fit based on actual record
+4. Workout pattern
+5. Trainer angles (layoff, first-time, equipment change, class move)
+6. Jockey fit
+7. Trip bad luck in recent races (flag explicitly)
+
+Return ONLY JSON:
+
+{
+  "postPosition": "${h.postPosition}",
+  "name": "${h.name}",
+  "runningStyle": "E" | "EP" | "P" | "S",
+  "lastRaces": "Summary of last 3-5 races with results and figs",
+  "speedFigures": "e.g. '87-92-84 last three Beyers'",
+  "bestFig": 92,
+  "workouts": "Recent works",
+  "angles": "Positive angles",
+  "concerns": "Real concerns",
+  "tripNote": "Trip bad luck flag if present, otherwise null",
+  "fitness": "Sharp | Developing | Questionable | Peaking | Regressing",
+  "distanceSurfaceFit": "Good | Questionable | Untested | Proven",
+  "projectedEarlyPos": "1-2 lengths off, 3-4 wide stalking, last in field, etc.",
+  "research": "2-3 sentences on what sources/PP data told you",
+  "confidence": 1-10
+}
+
+Return valid JSON only. Use null where info unavailable.`;
+
+              try {
+                const { data } = await callClaude({
+                  apiKey,
+                  modelId: model.id,
+                  prompt: horsePrompt,
+                  useWebSearch: !ppHorse, // skip web search if we have PP data
+                  maxTokens: 2500
+                });
+                setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done' } : s));
+                return data;
+              } catch (e) {
+                setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done', label: s.label + ' (partial)' } : s));
+                return { postPosition: h.postPosition, name: h.name, runningStyle: 'P', lastRaces: 'Research failed', speedFigures: null, research: `Error: ${e.message}`, confidence: 5 };
+              }
+            }));
+            horseResearch.push(...batchResults);
+          }
+
+          // Phase 2: synthesis with pace school rigor
+          const synthIdx = steps.length - 1;
+          setProgressSteps(prev => prev.map((s, idx) => idx === synthIdx ? { ...s, status: 'active' } : s));
+
+          const researchSummary = horseResearch.map(h =>
+            `${h.postPosition}. ${h.name}
+  Style: ${h.runningStyle} | Projected early: ${h.projectedEarlyPos}
+  Best fig: ${h.bestFig} | Figs: ${h.speedFigures}
+  Fitness: ${h.fitness} | Dist/surf fit: ${h.distanceSurfaceFit} | Confidence: ${h.confidence}
+  Angles: ${h.angles}
+  Concerns: ${h.concerns}
+  Trip note: ${h.tripNote || 'none'}`
+          ).join('\n\n');
+
+          const synthPrompt = `You are a professional horse racing handicapper synthesizing deep research into picks. You will follow a rigorous PACE-SCHOOL approach to projection.
+
+RACE: ${selectedRace.raceName} (Race ${selectedRace.raceNumber})
+TRACK: ${selectedTrack.name}, ${selectedDate}
+DISTANCE: ${selectedRace.distance} | SURFACE: ${selectedRace.surface}
+CONDITIONS: ${entries?.conditions || ''}
+${conditionsContext}
+
+PER-HORSE RESEARCH:
+${researchSummary}
+
+STEP-BY-STEP PACE ANALYSIS (do all steps rigorously):
+
+Step 1. Identify early-speed horses (E, EP). Count them. If 3+, pace will likely be HOT. If 1, pace will likely be CONTROLLED. If 2, depends on whether they pressure each other or settle.
+
+Step 2. Project the early leader. Who gets the lead, and is anyone pressing? Does the projected leader typically wire fields or get caught?
+
+Step 3. Project the pace shape. Expected fractional stress: hot / honest / soft. A hot pace helps closers (S) and late-pressers (P). A slow/controlled pace helps front-runners (E) and stalkers (EP).
+
+Step 4. Identify the pace-suited contenders. Which horses have the right style for the projected pace AND the figures/fitness to be live?
+
+Step 5. Track bias overlay. Does today's bias (from conditions) reinforce or contradict the pace conclusion?
+
+Step 6. Trip angle overlay. Any horses with documented trip bad luck last out (see tripNote) are candidates for improvement and may offer value beyond what raw figures suggest.
+
+Step 7. Pick Win/Place/Show/Longshot. Win = best pace+figure combo. Longshot = value angle (trip improver, class dropper, sharp work pattern, pace-suited bomb).
+
+Step 8. Exotic structure. Build exactas/tris/supers around pace-suited contenders; use trip-bad-luck and pace-suited bombs underneath for value.
+
+Step 9. **Probability distribution.** Assign each horse a win probability (0.0-1.0). These must sum to approximately 1.0 across the field. Calibration guidelines: an obvious standout in a small field might be 40-50%; a chalky favorite in a competitive race 25-35%; a solid contender 10-20%; a live longshot 5-10%; a true bomb 2-4%; a pace-compromised also-ran 1-2%. NEVER assign every horse ~10% just to be safe — that's useless. Differentiate. If you're uncertain, spread probability more evenly but do not flatten entirely.
+
+Return ONLY JSON:
+
+{
+  "paceAnalysis": {
+    "earlySpeedHorses": [{ "postPosition": "5", "name": "...", "style": "E" }],
+    "projectedLeader": "Post 5 likely clears by the first turn",
+    "paceShape": "HOT" | "HONEST" | "SOFT",
+    "paceReasoning": "2-3 sentences on why this shape, what it means for the race",
+    "paceSuitedStyles": ["S", "P"]
+  },
+  "paceScenario": "Human-readable pace summary (3-4 sentences)",
+  "trackBias": "How today's bias affects this race (1-2 sentences)",
+  "tripAngles": "Any horses flagged for trip bad luck and what it means (1-2 sentences)",
+  "probabilityDistribution": [
+    { "postPosition": "1", "name": "Horse A", "winProbability": 0.25 },
+    { "postPosition": "2", "name": "Horse B", "winProbability": 0.18 }
+  ],
+  "topPicks": {
+    "win": { "postPosition": "X", "name": "Name", "reasoning": "2-3 sentences tying pace + figures + bias" },
+    "place": { "postPosition": "X", "name": "Name", "reasoning": "1-2 sentences" },
+    "show": { "postPosition": "X", "name": "Name", "reasoning": "1-2 sentences" },
+    "longshot": { "postPosition": "X", "name": "Name", "reasoning": "2-3 sentences — explicitly name the angle (trip, pace, class, works)" }
+  },
+  "exotics": {
+    "exacta": "e.g. '5 / 8,12'",
+    "trifecta": "e.g. '5 / 8,12 / 1,3,8,12'",
+    "superfecta": "e.g. '5 / 8 / 1,12 / 1,3,8,12'",
+    "notes": "1-2 sentences on bankroll/ticket rationale"
+  },
+  "summary": "3-4 sentence final take"
+}
+
+Return valid JSON only. Your probabilityDistribution array MUST include every horse in the field, and the winProbability values MUST sum to approximately 1.0 (between 0.95 and 1.05).`;
+
+          const { data: synthData } = await callClaude({ apiKey, modelId: model.id, prompt: synthPrompt, maxTokens: 3000 });
+
+          setProgressSteps(prev => prev.map((s, idx) => idx === synthIdx ? { ...s, status: 'done' } : s));
+
+          const fullAnalysis = {
+            ...synthData,
+            horses: horseResearch.map(hr => ({
+              postPosition: hr.postPosition,
+              name: hr.name,
+              runningStyle: hr.runningStyle || 'P',
+              keyStats: hr.speedFigures || hr.lastRaces || 'Limited data',
+              strengths: hr.angles || 'See research',
+              concerns: hr.concerns || 'None noted',
+              verdict: hr.fitness ? `${hr.fitness} — ${hr.distanceSurfaceFit} fit — confidence ${hr.confidence}/10` : `Confidence ${hr.confidence}/10`,
+              confidence: hr.confidence,
+              research: hr.research,
+              lastRaces: hr.lastRaces,
+              workouts: hr.workouts,
+              tripNote: hr.tripNote,
+              bestFig: hr.bestFig,
+              projectedEarlyPos: hr.projectedEarlyPos
+            }))
+          };
+          setAnalysis(fullAnalysis);
+          setView('analysis');
+        } catch (err) {
+          console.error(err);
+          setError(`Analysis failed: ${err.message}`);
+        } finally {
+          setLoading(false);
+          setProgress('');
+        }
+      };
+
+      const addHorse = () => setHorses([...horses, { postPosition: '', name: '', jockey: '', trainer: '', morningLine: '' }]);
+      const removeHorse = (idx) => setHorses(horses.filter((_, i) => i !== idx));
+      const updateHorse = (idx, field, value) => { const u = [...horses]; u[idx][field] = value; setHorses(u); };
+
+      const copyPicks = () => {
+        if (!analysis) return;
+        const text = `${selectedTrack.name} R${selectedRace?.raceNumber} - ${selectedDate}
+Win: ${analysis.topPicks.win.postPosition}. ${analysis.topPicks.win.name}
+Place: ${analysis.topPicks.place.postPosition}. ${analysis.topPicks.place.name}
+Show: ${analysis.topPicks.show.postPosition}. ${analysis.topPicks.show.name}
+Longshot: ${analysis.topPicks.longshot.postPosition}. ${analysis.topPicks.longshot.name}
+Exacta: ${analysis.exotics.exacta}
+Trifecta: ${analysis.exotics.trifecta}`;
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      const goHome = () => { setView('home'); setError(null); };
+      const goTracks = () => { setView('tracks'); setError(null); setSelectedTrack(null); setRaceCard(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); };
+      const goRaces = () => { setView('races'); setError(null); setSelectedRace(null); setEntries(null); setAnalysis(null); setConditions(null); };
+      const goEntries = () => { setView('entries'); setError(null); setAnalysis(null); };
+
+      const confidenceColor = (c) => c >= 8 ? '#fda4af' : c >= 6 ? '#fcd34d' : c >= 4 ? '#a8a29e' : '#78716c';
+
+      const prettyDate = new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      const currentModel = MODELS[selectedModel];
+
+      // Bankroll for Kelly sizing (persisted)
+      const [bankroll, setBankroll] = useState(() => parseFloat(localStorage.getItem('postTime_bankroll') || '100') || 100);
+      useEffect(() => { localStorage.setItem('postTime_bankroll', String(bankroll)); }, [bankroll]);
+
+      // Compute overlays when we have BOTH analysis probabilities AND live odds
+      const overlays = (() => {
+        if (!analysis?.probabilityDistribution || !currentOdds?.horses) return null;
+        const aiByPost = new Map();
+        for (const p of analysis.probabilityDistribution) {
+          if (p.postPosition) aiByPost.set(String(p.postPosition), p);
+        }
+        const rows = [];
+        for (const oh of currentOdds.horses) {
+          const post = String(oh.postPosition);
+          const ai = aiByPost.get(post);
+          if (!ai) continue;
+          const decimalOdds = parseOdds(oh.currentOdds);
+          if (decimalOdds == null) continue;
+          rows.push({
+            postPosition: post,
+            name: ai.name || oh.horseName,
+            currentOddsText: oh.currentOdds,
+            decimalOdds,
+            mlOddsText: oh.morningLine,
+            poolPercentage: oh.poolPercentage,
+            oddsDirection: oh.oddsDirection,
+            aiProbRaw: ai.winProbability,
+            toteImpliedRaw: computeImpliedFromOdds(decimalOdds)
+          });
+        }
+        if (rows.length === 0) return null;
+        // Normalize both sides so they sum to 1.0 (strips takeout from tote)
+        const aiNorm = normalizeProbabilities(rows.map(r => r.aiProbRaw));
+        const toteNorm = normalizeProbabilities(rows.map(r => r.toteImpliedRaw));
+        rows.forEach((r, i) => {
+          r.aiProb = aiNorm[i];
+          r.toteProb = toteNorm[i];
+          r.edge = r.aiProb - r.toteProb;
+          r.overlay = classifyOverlay(r.aiProb, r.toteProb);
+          r.kelly = computeKelly(r.aiProb, r.decimalOdds, bankroll, 0.25);
+        });
+        // Sort by overlay ratio descending so the best bets surface first
+        rows.sort((a, b) => (b.overlay?.ratio || 0) - (a.overlay?.ratio || 0));
+        return rows;
+      })();
+
+
+      const openScanModal = (race) => { setScanModalRace(race); };
+      const handleScanSaved = (event) => {
+        // event: { type: 'pp' | 'odds', data?, cleared? }
+        if (selectedTrack) setScannedRaces(getRacesWithPP(selectedTrack.slug, selectedDate));
+        if (selectedRace && scanModalRace && scanModalRace.raceNumber === selectedRace.raceNumber) {
+          if (event.type === 'pp') {
+            setCurrentPP(event.cleared ? null : (event.data || loadPPData(selectedTrack.slug, selectedDate, selectedRace.raceNumber)));
+          } else if (event.type === 'odds') {
+            setCurrentOdds(event.cleared ? null : (event.data || loadOddsData(selectedTrack.slug, selectedDate, selectedRace.raceNumber)));
+          }
+        }
+      };
+
+      const scanExistingPP = scanModalRace ? loadPPData(selectedTrack?.slug, selectedDate, scanModalRace.raceNumber) : null;
+      const scanExistingOdds = scanModalRace ? loadOddsData(selectedTrack?.slug, selectedDate, scanModalRace.raceNumber) : null;
+
+      return (
+        <>
+          {scanModalRace && selectedTrack && (
+            <ScanModal
+              apiKey={apiKey}
+              track={selectedTrack}
+              date={selectedDate}
+              race={scanModalRace}
+              existingPP={scanExistingPP}
+              existingOdds={scanExistingOdds}
+              onClose={() => setScanModalRace(null)}
+              onSaved={handleScanSaved}
+            />
+          )}
+
+          <header>
+            <div className="kicker"><IconFlower /><span>AI Handicapper · Scan · Deep Dive · Pace</span></div>
+            <h1>Post <em>Time</em><span className="sub">AI Handicapper</span></h1>
+            <p className="tagline">Scan the program. Deep-dive every horse. Pace-school projection. Track bias included.</p>
+          </header>
+
+          {view !== 'home' && (
+            <div className="breadcrumb">
+              <span className="crumb" onClick={goHome}>Home</span>
+              <span className="sep">/</span>
+              <span className={view === 'tracks' ? 'active' : 'crumb'} onClick={view !== 'tracks' ? goTracks : undefined}>
+                {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+              {selectedTrack && (<><span className="sep">/</span><span className={view === 'races' ? 'active' : 'crumb'} onClick={view !== 'races' && view !== 'tracks' ? goRaces : undefined}>{selectedTrack.name}</span></>)}
+              {selectedRace && (<><span className="sep">/</span><span className={view === 'entries' ? 'active' : 'crumb'} onClick={view === 'analysis' ? goEntries : undefined}>Race {selectedRace.raceNumber}</span></>)}
+              {view === 'analysis' && (<><span className="sep">/</span><span className="active">Analysis</span></>)}
+            </div>
+          )}
+
+          {error && (<div className="error-box"><IconAlert /><div>{error}</div></div>)}
+
+          {view === 'home' && (
+            <>
+              {!apiKey && (
+                <div className="api-key-banner">
+                  <label>Anthropic API Key (one-time)</label>
+                  <input type="password" placeholder="sk-ant-..." value={apiKey} onChange={e => setApiKey(e.target.value)} />
+                  <p className="hint">Stored locally. Get one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
+                </div>
+              )}
+              <div className="info-box">
+                <strong style={{ color: '#6ee7b7', fontStyle: 'normal' }}>New:</strong> Scan your Churchill/DRF/Brisnet program at the track — app extracts Beyer figures, running lines, trip comments, workouts, trainer stats. Data saves locally so you scan once per race and use all day. Deep-dive analysis now includes rigorous pace projection + trip-bad-luck flagging.
+              </div>
+              <section>
+                <h2 style={{ marginBottom: '1rem' }}>Pick a Race Day</h2>
+                <div>
+                  <label>Date</label>
+                  <select value={selectedDate} onChange={e => setSelectedDate(e.target.value)}>
+                    {dateOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              </section>
+              <button className="primary-btn" onClick={fetchTracksForDay} disabled={loading || !apiKey}>
+                {loading ? (<><div className="spinner"></div><span>{progress}</span></>) : (<><IconSearch /> Find Tracks Racing</>)}
+              </button>
+            </>
+          )}
+
+          {view === 'tracks' && tracksForDay && (
+            <>
+              <div className="track-info-bar"><strong>{prettyDate}</strong> · {tracksForDay.tracks.length} {tracksForDay.tracks.length === 1 ? 'track' : 'tracks'} racing</div>
+              {tracksForDay.tracks.length === 0 ? (
+                <div className="empty-state">
+                  <p>No thoroughbred tracks racing on {prettyDate}.</p>
+                  <button className="ghost-btn" onClick={goHome} style={{ marginTop: '1rem', margin: '1rem auto 0' }}><IconArrowLeft /> Pick a different date</button>
+                </div>
+              ) : (
+                <>
+                  <h2 style={{ marginBottom: '1rem' }}>Tracks Racing</h2>
+                  <div className="track-list">
+                    {tracksForDay.tracks.map(track => (
+                      <button key={track.slug} className="track-row" onClick={() => fetchRaceCard(track)} disabled={loading}>
+                        <div className="track-post">{track.firstPost}</div>
+                        <div className="track-name">{track.name}</div>
+                        <div className="track-stats">{track.totalRaces}&nbsp;races<br />{track.totalPurses || ''}</div>
+                      </button>
+                    ))}
+                  </div>
+                  {loading && (<div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#fcd34d', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}><div className="spinner-amber"></div> {progress}</div>)}
+                </>
+              )}
+            </>
+          )}
+
+          {view === 'races' && raceCard && (
+            <>
+              <div className="track-info-bar"><strong>{raceCard.trackName}</strong> · {prettyDate} · {raceCard.races.length} races · {scannedRaces.size} scanned</div>
+              <h2 style={{ marginBottom: '1rem' }}>Race Card</h2>
+              <div className="race-list">
+                {raceCard.races.map(race => {
+                  const isScanned = scannedRaces.has(race.raceNumber);
+                  const source = scannedRaces.get(race.raceNumber);
+                  return (
+                    <div key={race.raceNumber} style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+                      <button className={`race-row ${isScanned ? 'scanned' : ''}`} onClick={() => fetchEntries(race)} disabled={loading} style={{ flex: 1 }}>
+                        <div className="race-num">{race.raceNumber}</div>
+                        <div className="race-meta">
+                          <div className="race-post">{race.postTime} {race.fieldSize ? `· ${race.fieldSize} horses` : ''}</div>
+                          <div className="race-name">{race.isStakes && '★ '}{race.raceName}</div>
+                          <div className="race-desc">{race.distance} · {race.surface}{race.purse ? ` · ${race.purse}` : ''} · {race.conditions}</div>
+                          {isScanned && (
+                            <div className="race-indicator">
+                              <span className={`source-badge ${source === 'brisnet' ? 'brisnet' : 'photo'}`}>
+                                {source === 'brisnet' ? '📊' : '📷'}
+                              </span>
+                              {source === 'brisnet' ? 'Brisnet data loaded' : 'Photo scan saved'}
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                      <button
+                        className="ghost-btn"
+                        style={{ flexDirection: 'column', padding: '0.5rem', minWidth: '60px', justifyContent: 'center', color: isScanned ? '#6ee7b7' : '#a8a29e', borderColor: isScanned ? 'rgba(110, 231, 183, 0.4)' : '#44403c' }}
+                        onClick={() => { setSelectedTrack(selectedTrack); openScanModal(race); }}
+                        disabled={loading}
+                      >
+                        <IconScan />
+                        <span style={{ fontSize: '9px', marginTop: '0.2rem' }}>{isScanned ? 'Re-scan' : 'Load'}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {loading && (<div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#fcd34d', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}><div className="spinner-amber"></div> {progress}</div>)}
+            </>
+          )}
+
+          {view === 'entries' && entries && (
+            <>
+              <div className="track-info-bar"><strong>Race {selectedRace.raceNumber}</strong> · {selectedRace.postTime} · {entries.distance} {entries.surface}{entries.purse ? ` · ${entries.purse}` : ''}</div>
+              <p style={{ color: '#a8a29e', fontStyle: 'italic', marginTop: 0, marginBottom: '1rem', fontSize: '0.875rem' }}>{entries.conditions}</p>
+              {entries.notes && (<div className="info-box" style={{ color: '#fde68a' }}>{entries.notes}</div>)}
+
+              <button
+                className="scan-btn"
+                onClick={() => openScanModal(selectedRace)}
+              >
+                <IconScan />
+                <span>
+                  {currentPP ? <>{currentPP.source === 'brisnet' ? '📊' : '📷'} PP</> : '○ PP'}
+                  {' · '}
+                  {currentOdds ? <>🎰 Odds ({currentOdds.horses?.length || 0})</> : '○ Odds'}
+                  {' — '}{(currentPP || currentOdds) ? 'Manage' : 'Add race data'}
+                </span>
+              </button>
+
+              <div className="conditions-panel">
+                <div className="conditions-header">
+                  <span className="conditions-title">Live Track Conditions</span>
+                  <button className="refresh-link" onClick={refreshConditions} disabled={conditionsLoading}>
+                    {conditionsLoading ? (<><div className="spinner-amber" style={{ width: '10px', height: '10px' }}></div> Loading</>) : (<><IconRefresh /> Refresh</>)}
+                  </button>
+                </div>
+                {!conditions && !conditionsLoading && (<p style={{ color: '#78716c', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>Tap refresh to load.</p>)}
+                {conditionsLoading && !conditions && (<p style={{ color: '#fcd34d', fontSize: '0.875rem', fontStyle: 'italic', margin: 0 }}>Checking conditions...</p>)}
+                {conditions && (
+                  <>
+                    <div className="conditions-grid">
+                      {conditions.dirtCondition && (<div><div className="condition-label">Dirt</div><div className={`condition-value ${conditions.dirtCondition === 'Fast' ? 'good' : ['Sloppy','Muddy','Sealed'].includes(conditions.dirtCondition) ? 'off' : 'wet'}`}>{conditions.dirtCondition}</div></div>)}
+                      {conditions.turfCondition && (<div><div className="condition-label">Turf</div><div className={`condition-value ${conditions.turfCondition === 'Firm' ? 'good' : 'wet'}`}>{conditions.turfCondition}</div></div>)}
+                      {conditions.weather && (<div><div className="condition-label">Weather</div><div className="condition-value">{conditions.weather}</div></div>)}
+                      {conditions.railPosition && (<div><div className="condition-label">Rail</div><div className="condition-value">{conditions.railPosition}</div></div>)}
+                    </div>
+                    {conditions.playingNote && (<div className="playing-note">🎯 {conditions.playingNote}</div>)}
+                    {conditions.earlyResults && conditions.earlyResults !== 'Not enough races completed yet' && (<div className="playing-note" style={{ color: '#a8a29e' }}>{conditions.earlyResults}</div>)}
+                  </>
+                )}
+              </div>
+
+              <section>
+                <div className="row-header">
+                  <h2>The Field ({horses.length})</h2>
+                  <span className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#78716c', textTransform: 'uppercase' }}>Edit before analyzing</span>
+                </div>
+                {horses.map((h, idx) => {
+                  const hasPPMatch = currentPP?.horses?.some(pph => pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim());
+                  return (
+                    <div key={idx} className={`horse-card ${hasPPMatch ? 'has-pp' : ''}`}>
+                      <div className="horse-header">
+                        <span className="post-number">{h.postPosition || idx + 1}</span>
+                        <input className="horse-name-input" placeholder="Horse name" value={h.name} onChange={e => updateHorse(idx, 'name', e.target.value)} />
+                        {hasPPMatch && <span className="pp-badge">PP</span>}
+                        {horses.length > 1 && <button className="x-btn" onClick={() => removeHorse(idx)}><IconX /></button>}
+                      </div>
+                      <div className="horse-details grid-4">
+                        <input placeholder="Post #" value={h.postPosition} onChange={e => updateHorse(idx, 'postPosition', e.target.value)} />
+                        <input placeholder="Jockey" value={h.jockey} onChange={e => updateHorse(idx, 'jockey', e.target.value)} />
+                        <input placeholder="Trainer" value={h.trainer} onChange={e => updateHorse(idx, 'trainer', e.target.value)} />
+                        <input placeholder="ML odds" value={h.morningLine} onChange={e => updateHorse(idx, 'morningLine', e.target.value)} />
+                      </div>
+                    </div>
+                  );
+                })}
+                <button className="add-btn" onClick={addHorse}><IconPlus /> Add Horse</button>
+              </section>
+
+              <section>
+                <label style={{ marginBottom: '0.5rem' }}>Choose Analysis Model</label>
+                <div className="model-picker">
+                  {Object.entries(MODELS).map(([key, m]) => (
+                    <button key={key} className={`model-btn ${selectedModel === key ? 'active' : ''}`} onClick={() => setSelectedModel(key)} disabled={loading}>
+                      <span className="name">{m.name}</span><span className="price">{m.priceNote}</span>
+                    </button>
+                  ))}
+                </div>
+                <p style={{ color: '#78716c', fontSize: '0.8rem', fontStyle: 'italic', margin: '0.5rem 0 0' }}>{currentModel.desc} {currentPP ? 'PP data will be used directly — faster & cheaper.' : 'Will use web search for horse research.'}</p>
+              </section>
+
+              <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
+                <button className="primary-btn" onClick={runAnalysis} disabled={loading}>
+                  {loading ? (<><div className="spinner"></div><span>Deep dive ({progressSteps.filter(s => s.status === 'done').length}/{progressSteps.length})</span></>) : (<><IconSparkle /> Deep Dive ({currentModel.name})</>)}
+                </button>
+                {loading && progressSteps.length > 0 && (
+                  <div className="progress-detail">
+                    {progressSteps.map((s, idx) => (
+                      <div key={idx} className={`step ${s.status}`}>
+                        {s.status === 'done' ? '✓' : s.status === 'active' ? '◐' : '○'} {s.label}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <button className="secondary-btn" onClick={goRaces} disabled={loading}><IconArrowLeft /> Back to Race Card</button>
+              </div>
+            </>
+          )}
+
+          {view === 'analysis' && analysis && (
+            <div>
+              <div className="row-header">
+                <h2 style={{ fontSize: '1.875rem' }}>The Card</h2>
+                <div className="action-bar">
+                  <button className="ghost-btn" onClick={() => setShowReasoning(!showReasoning)}>{showReasoning ? <><IconEyeOff /> Hide Work</> : <><IconEye /> Show Work</>}</button>
+                  <button className="ghost-btn" onClick={copyPicks}>{copied ? <><IconCheck /> Copied</> : <><IconCopy /> Copy Picks</>}</button>
+                  <button className="ghost-btn" onClick={goEntries}><IconArrowLeft /> Edit Field</button>
+                  <button className="ghost-btn" onClick={goHome}><IconRefresh /> New Race</button>
+                </div>
+              </div>
+
+              {conditions && (
+                <div className="conditions-panel" style={{ marginBottom: '1.5rem' }}>
+                  <div className="conditions-title" style={{ marginBottom: '0.5rem' }}>Conditions Considered</div>
+                  <div style={{ fontSize: '0.875rem', color: '#a8a29e' }}>
+                    {[conditions.dirtCondition && `Dirt: ${conditions.dirtCondition}`, conditions.turfCondition && `Turf: ${conditions.turfCondition}`, conditions.weather, conditions.railPosition].filter(Boolean).join(' · ')}
+                    {conditions.playingNote && (<><br /><em style={{ color: '#fcd34d' }}>{conditions.playingNote}</em></>)}
+                  </div>
+                </div>
+              )}
+
+              <section className="pace-grid">
+                <div className="pace-box"><div className="pace-label">Pace Scenario</div><p>{analysis.paceScenario}</p></div>
+                <div className="pace-box amber"><div className="pace-label">Track Bias</div><p>{analysis.trackBias}</p></div>
+              </section>
+
+              {analysis.paceAnalysis && (
+                <section>
+                  <h3>Pace Breakdown</h3>
+                  <div className="exotics-box">
+                    <div className="exotic-row">
+                      <span className="exotic-label">Shape</span>
+                      <span className="exotic-value" style={{ color: analysis.paceAnalysis.paceShape === 'HOT' ? '#fb7185' : analysis.paceAnalysis.paceShape === 'SOFT' ? '#6ee7b7' : '#fcd34d' }}>
+                        {analysis.paceAnalysis.paceShape}
+                      </span>
+                    </div>
+                    <div className="exotic-row"><span className="exotic-label">Early Speed</span><span style={{ color: '#d6d3d1', fontSize: '0.9rem' }}>{(analysis.paceAnalysis.earlySpeedHorses || []).map(h => `${h.postPosition}. ${h.name} (${h.style})`).join(', ') || 'None'}</span></div>
+                    <div className="exotic-row"><span className="exotic-label">Leader</span><span style={{ color: '#d6d3d1', fontSize: '0.9rem' }}>{analysis.paceAnalysis.projectedLeader}</span></div>
+                    <div className="exotic-row"><span className="exotic-label">Suited</span><span style={{ color: '#6ee7b7', fontFamily: 'JetBrains Mono, monospace' }}>{(analysis.paceAnalysis.paceSuitedStyles || []).join(', ')}</span></div>
+                    <p className="exotic-notes">{analysis.paceAnalysis.paceReasoning}</p>
+                  </div>
+                </section>
+              )}
+
+              {analysis.tripAngles && analysis.tripAngles.toLowerCase() !== 'none' && analysis.tripAngles.toLowerCase() !== 'none noted' && (
+                <section>
+                  <div className="pace-box mint" style={{ padding: '0.75rem 1rem' }}>
+                    <div className="pace-label">Trip Angles</div>
+                    <p style={{ margin: 0 }}>{analysis.tripAngles}</p>
+                  </div>
+                </section>
+              )}
+
+              {/* v7: Value School — Overlay detection */}
+              {overlays && overlays.length > 0 && (
+                <section>
+                  <h3>
+                    <span style={{ color: '#fcd34d' }}>💰</span> Value Analysis
+                  </h3>
+                  <p style={{ color: '#a8a29e', fontSize: '0.875rem', marginBottom: '1rem', fontStyle: 'italic' }}>
+                    Comparing AI's probability estimates against live tote odds (captured {currentOdds?.capturedAt ? new Date(currentOdds.capturedAt).toLocaleTimeString() : '?'} — odds shift until post).
+                  </p>
+
+                  {/* Bankroll input for Kelly */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(28, 25, 23, 0.4)', border: '1px solid #292524' }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', letterSpacing: '0.2em', color: '#78716c', textTransform: 'uppercase' }}>Bankroll</span>
+                    <span style={{ color: '#a8a29e' }}>$</span>
+                    <input
+                      type="number"
+                      value={bankroll}
+                      onChange={e => setBankroll(parseFloat(e.target.value) || 0)}
+                      style={{ width: '80px', padding: '0.25rem 0.4rem', fontSize: '0.9rem' }}
+                      min="1"
+                      step="10"
+                    />
+                    <span style={{ fontSize: '0.75rem', color: '#78716c', fontStyle: 'italic', flex: 1 }}>
+                      Kelly sizing uses ¼-Kelly (conservative) for this race
+                    </span>
+                  </div>
+
+                  <div className="overlay-grid">
+                    {overlays.map((row, idx) => (
+                      <div key={idx} className="overlay-row" style={{ borderLeftColor: row.overlay?.color || '#44403c' }}>
+                        <div className="overlay-horse">
+                          <span className="overlay-post">{row.postPosition}</span>
+                          <span className="overlay-name">{row.name}</span>
+                          {row.overlay && row.overlay.tier !== 'fair' && (
+                            <span className="overlay-badge" style={{ color: row.overlay.color, borderColor: row.overlay.color }}>
+                              {row.overlay.label}
+                            </span>
+                          )}
+                        </div>
+                        <div className="overlay-numbers">
+                          <div className="overlay-num">
+                            <div className="overlay-num-label">Tote</div>
+                            <div className="overlay-num-value">
+                              {row.currentOddsText}
+                              {row.oddsDirection === 'up' && <span style={{ color: '#6ee7b7', marginLeft: '0.2rem' }}>↑</span>}
+                              {row.oddsDirection === 'down' && <span style={{ color: '#fb7185', marginLeft: '0.2rem' }}>↓</span>}
+                            </div>
+                            <div className="overlay-num-sub">{(row.toteProb * 100).toFixed(0)}%</div>
+                          </div>
+                          <div className="overlay-num">
+                            <div className="overlay-num-label">AI</div>
+                            <div className="overlay-num-value" style={{ color: '#6ee7b7' }}>{(row.aiProb * 100).toFixed(0)}%</div>
+                            <div className="overlay-num-sub">est. win</div>
+                          </div>
+                          <div className="overlay-num">
+                            <div className="overlay-num-label">Edge</div>
+                            <div className="overlay-num-value" style={{ color: row.edge > 0 ? '#6ee7b7' : '#78716c' }}>
+                              {row.edge > 0 ? '+' : ''}{(row.edge * 100).toFixed(1)}%
+                            </div>
+                            <div className="overlay-num-sub">{row.overlay?.ratio ? row.overlay.ratio.toFixed(2) + 'x' : ''}</div>
+                          </div>
+                          {row.kelly > 0 && (
+                            <div className="overlay-num">
+                              <div className="overlay-num-label">¼ Kelly</div>
+                              <div className="overlay-num-value" style={{ color: '#fcd34d' }}>${row.kelly.toFixed(0)}</div>
+                              <div className="overlay-num-sub">to win</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Summary */}
+                  {(() => {
+                    const realOverlays = overlays.filter(r => r.overlay && ['small', 'meaningful', 'big'].includes(r.overlay.tier));
+                    const topBet = overlays.find(r => r.kelly > 0);
+                    if (realOverlays.length === 0) {
+                      return <div className="exotic-notes">No meaningful overlays detected — the market is pricing this race close to the AI's estimate. Straight bets don't look +EV here.</div>;
+                    }
+                    return (
+                      <div className="exotic-notes">
+                        <strong style={{ color: '#fcd34d' }}>{realOverlays.length} overlay{realOverlays.length !== 1 ? 's' : ''} found.</strong>{' '}
+                        {topBet ? `Biggest value: ${topBet.name} at ${topBet.currentOddsText}. Kelly-sized suggestion: $${topBet.kelly.toFixed(0)} to win.` : ''}
+                        {' '}Remember odds drift until post — recheck the tote 1-2 min out.
+                      </div>
+                    );
+                  })()}
+                </section>
+              )}
+
+              {/* Prompt to add odds if we have analysis but no odds yet */}
+              {analysis.probabilityDistribution && !currentOdds && (
+                <section>
+                  <div className="exotics-box" style={{ borderLeft: '3px solid #fcd34d' }}>
+                    <div className="pace-label" style={{ color: '#fcd34d' }}>💡 Unlock Value Analysis</div>
+                    <p style={{ margin: '0.5rem 0', color: '#d6d3d1' }}>
+                      Screenshot the TwinSpires Advanced tab (or any live tote display) and the app will compare AI probabilities to the tote and flag overlays.
+                    </p>
+                    <button className="ghost-btn" onClick={() => openScanModal(selectedRace)} style={{ marginTop: '0.5rem' }}>
+                      <IconScan /> Add Live Odds
+                    </button>
+                  </div>
+                </section>
+              )}
+
+              <section>
+                <h3><IconTrophy /> The Picks</h3>
+                <div className="picks-grid">
+                  {[{ key: 'win', label: 'Win' }, { key: 'place', label: 'Place' }, { key: 'show', label: 'Show' }, { key: 'longshot', label: 'Longshot' }].map(({ key, label }) => {
+                    const pick = analysis.topPicks[key];
+                    return (
+                      <div key={key} className={`pick-card ${key}`}>
+                        <div className="pick-label">{label}</div>
+                        <div className="pick-name"><span className="post">{pick.postPosition}.</span> {pick.name}</div>
+                        <p className="pick-reasoning">{pick.reasoning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <section className="exotics-box">
+                <h3><IconTrend /> Exotic Wagers</h3>
+                <div className="exotic-row"><span className="exotic-label">Exacta</span><span className="exotic-value">{analysis.exotics.exacta}</span></div>
+                <div className="exotic-row"><span className="exotic-label">Trifecta</span><span className="exotic-value">{analysis.exotics.trifecta}</span></div>
+                <div className="exotic-row"><span className="exotic-label">Superfecta</span><span className="exotic-value">{analysis.exotics.superfecta}</span></div>
+                <p className="exotic-notes">{analysis.exotics.notes}</p>
+              </section>
+
+              <section>
+                <h3>Horse-by-Horse</h3>
+                {[...analysis.horses].sort((a, b) => b.confidence - a.confidence).map((horse, idx) => (
+                  <div key={idx} className="horse-result">
+                    <div className="horse-result-header">
+                      <div className="horse-result-name"><span className="post">{horse.postPosition}.</span> {horse.name}</div>
+                      <div className="horse-result-meta">
+                        <span className="running-style">{horse.runningStyle}</span>
+                        {horse.tripNote && <span className="trip-flag">⚑ Trip angle</span>}
+                        <span className="confidence" style={{ color: confidenceColor(horse.confidence) }}>{horse.confidence}<span className="denom">/10</span></span>
+                      </div>
+                    </div>
+                    <div className="confidence-bar"><div className="confidence-fill" style={{ width: `${(horse.confidence / 10) * 100}%` }}></div></div>
+                    <div className="horse-detail-grid">
+                      <div><div className="detail-label">Key Stats</div><p className="detail-text">{horse.keyStats}</p></div>
+                      <div><div className="detail-label strength">Strengths</div><p className="detail-text">{horse.strengths}</p></div>
+                      <div><div className="detail-label concern">Concerns</div><p className="detail-text">{horse.concerns}</p></div>
+                      <div><div className="detail-label verdict">Verdict</div><p className="detail-text verdict">{horse.verdict}</p></div>
+                    </div>
+                    {horse.tripNote && (
+                      <div className="reasoning-box" style={{ borderLeftColor: '#fcd34d' }}>
+                        <div className="research-label" style={{ color: '#fcd34d' }}>Trip Note</div>
+                        {horse.tripNote}
+                      </div>
+                    )}
+                    {showReasoning && (horse.research || horse.lastRaces || horse.workouts || horse.projectedEarlyPos) && (
+                      <div className="reasoning-box">
+                        <div className="research-label">Research Notes</div>
+                        {horse.projectedEarlyPos && <div><strong>Projected early position:</strong> {horse.projectedEarlyPos}</div>}
+                        {horse.lastRaces && <div style={{ marginTop: '0.4rem' }}><strong>Last races:</strong> {horse.lastRaces}</div>}
+                        {horse.workouts && <div style={{ marginTop: '0.4rem' }}><strong>Works:</strong> {horse.workouts}</div>}
+                        {horse.research && <div style={{ marginTop: '0.4rem' }}>{horse.research}</div>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </section>
+
+              <section className="summary-section">
+                <div className="pace-label">Final Word</div>
+                <p className="summary-quote">"{analysis.summary}"</p>
+              </section>
+
+              <div className="footer-note">AI analysis · Not financial advice · Bet responsibly</div>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('app'));
+    root.render(<App />);
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed:', err));
+      });
+    }
+    let deferredPrompt;
+    const installPrompt = document.getElementById('installPrompt');
+    const installBtn = document.getElementById('installBtn');
+    const dismissBtn = document.getElementById('dismissInstall');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!localStorage.getItem('install_dismissed')) installPrompt.classList.add('show');
+    });
+    installBtn?.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installPrompt.classList.remove('show');
+    });
+    dismissBtn?.addEventListener('click', () => {
+      installPrompt.classList.remove('show');
+      localStorage.setItem('install_dismissed', '1');
+    });
+  </script>
+</body>
+</html>
