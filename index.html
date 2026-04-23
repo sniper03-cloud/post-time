@@ -1744,7 +1744,8 @@ RULES:
           setStatus('Saving...');
           if (!saveOddsData(track.slug, date, race.raceNumber, data)) throw new Error('Could not save');
           onSaved(data);
-          onClose();
+          // Delay close to avoid unmounting during parent state update (causes blank screen on Android)
+          setTimeout(() => onClose(), 100);
         } catch (err) {
           console.error(err);
           setError(`Scan failed: ${err.message}`);
@@ -1756,7 +1757,7 @@ RULES:
         if (!confirm('Delete saved tote data for this race?')) return;
         localStorage.removeItem(oddsStorageKey(track.slug, date, race.raceNumber));
         onSaved(null);
-        onClose();
+        setTimeout(() => onClose(), 100);
       };
 
       return (
