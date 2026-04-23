@@ -2124,8 +2124,9 @@ Use null for any field you can't determine. Return valid JSON only.`;
 
         setLoading(true); setError(null); setAnalysis(null);
         const model = MODELS[selectedModel];
-        const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Researching ${h.name}`, status: 'pending' }));
-        steps.push({ id: 'synthesis', label: 'Pace projection, picks, exotics (synthesis)', status: 'pending' });
+        const synthModel = selectedModel === 'haiku' ? MODELS.sonnet : model;
+        const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Researching ${h.name}${currentPP ? ' (Haiku)' : ''}`, status: 'pending' }));
+        steps.push({ id: 'synthesis', label: `Synthesis — picks + probabilities (${synthModel.name})`, status: 'pending' });
         setProgressSteps(steps);
 
         // v7.1: Listen for rate-limit retries so we can show status
@@ -2402,7 +2403,10 @@ Return ONLY JSON:
 
 Return valid JSON only.`;
 
-          const { data: synthData } = await callClaude({ apiKey, modelId: model.id, prompt: synthPrompt, maxTokens: 3000 });
+          // v7.1: Synthesis MUST use at least Sonnet — Haiku mangles the complex JSON structure.
+          // Research uses Haiku (simple JSON, cheaper), synthesis uses Sonnet or better.
+          const synthModelId = selectedModel === 'haiku' ? MODELS.sonnet.id : model.id;
+          const { data: synthData } = await callClaude({ apiKey, modelId: synthModelId, prompt: synthPrompt, maxTokens: 3000 });
 
           setProgressSteps(prev => prev.map((s, idx) => idx === synthIdx ? { ...s, status: 'done' } : s));
 
@@ -2842,7 +2846,12 @@ Trifecta: ${analysis.exotics.trifecta}`;
                     </button>
                   ))}
                 </div>
-                <p style={{ color: '#78716c', fontSize: '0.8rem', fontStyle: 'italic', margin: '0.5rem 0 0' }}>{currentModel.desc} {currentPP ? 'PP data will be used directly — faster & cheaper.' : 'Will use web search for horse research.'}</p>
+                <p style={{ color: '#78716c', fontSize: '0.8rem', fontStyle: 'italic', margin: '0.5rem 0 0' }}>
+                  {currentPP
+                    ? `Research: Haiku (fast, cheap). Synthesis: ${selectedModel === 'haiku' ? 'Sonnet' : currentModel.name} (picks + probabilities). PP data used directly.`
+                    : `All calls use ${currentModel.name}. Web search for horse research (slower, costlier).`
+                  }
+                </p>
               </section>
 
               <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
