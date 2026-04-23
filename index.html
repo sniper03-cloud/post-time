@@ -1782,13 +1782,12 @@ RULES:
 
             <label
               className="upload-zone"
-              onClick={() => fileInputRef.current?.click()}
               style={{ borderColor: 'rgba(168, 85, 247, 0.4)' }}
             >
               <IconCamera />
               <div style={{ marginTop: '0.5rem', fontFamily: 'Playfair Display, serif', fontSize: '1rem', color: '#c4b5fd' }}>Tap to add screenshot</div>
               <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: '#78716c' }}>One screenshot usually enough · {images.length} added</div>
-              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={(e) => handleFiles(e.target.files)} disabled={processing} />
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }} disabled={processing} />
             </label>
 
             {previews.length > 0 && (
@@ -2853,6 +2852,53 @@ Trifecta: ${analysis.exotics.trifecta}`;
                   }
                 </p>
               </section>
+
+              {/* v7.1: Show banner if saved analysis exists for this race */}
+              {(() => {
+                if (!selectedTrack?.slug || !selectedRace?.raceNumber) return null;
+                const saved = loadAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
+                if (!saved) return null;
+                const age = formatAge(saved.timestamp);
+                const analysisDate = saved.timestamp.slice(0, 10);
+                const isDifferentDay = analysisDate !== selectedDate;
+                const isOld = isDifferentDay || (Date.now() - new Date(saved.timestamp).getTime() > 3 * 60 * 60 * 1000);
+                return (
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+                    padding: '0.8rem 1rem', marginTop: '1.5rem', marginBottom: '1rem',
+                    background: isOld ? 'rgba(252, 211, 77, 0.08)' : 'rgba(139, 92, 246, 0.08)',
+                    border: '1px solid ' + (isOld ? 'rgba(252, 211, 77, 0.3)' : 'rgba(168, 85, 247, 0.3)'),
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{ fontSize: '0.85rem', color: isOld ? '#fcd34d' : '#c4b5fd', flex: '1 1 auto' }}>
+                      <strong style={{ fontStyle: 'normal' }}>Saved analysis from {age}</strong>
+                      {isDifferentDay && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic', opacity: 0.8 }}>· from a prior day</span>}
+                      {!isDifferentDay && isOld && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic', opacity: 0.8 }}>· may be stale</span>}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        className="ghost-btn"
+                        onClick={() => {
+                          setAnalysis(saved.analysis);
+                          if (saved.conditions) setConditions(saved.conditions);
+                          setAnalysisTimestamp(saved.timestamp);
+                          setView('analysis');
+                        }}
+                        style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.4)' }}
+                      >
+                        <IconEye /> View
+                      </button>
+                      <button
+                        className="ghost-btn"
+                        onClick={() => { setAnalysis(null); setAnalysisTimestamp(null); runAnalysis(); }}
+                        disabled={loading}
+                      >
+                        <IconRefresh /> Re-run
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
                 <button className="primary-btn" onClick={runAnalysis} disabled={loading}>
