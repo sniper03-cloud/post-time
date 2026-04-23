@@ -415,6 +415,21 @@
       return new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
+    // v7.1: Incremental research progress — save each horse as it completes
+    // so we can resume if Android kills the app mid-analysis
+    const progressKey = (trackSlug, date, raceNum) => `progress:${trackSlug}:${date}:race${raceNum}`;
+    const saveResearchProgress = (trackSlug, date, raceNum, horseResults) => {
+      try { localStorage.setItem(progressKey(trackSlug, date, raceNum), JSON.stringify({ horses: horseResults, savedAt: new Date().toISOString() })); }
+      catch (e) { /* ignore */ }
+    };
+    const loadResearchProgress = (trackSlug, date, raceNum) => {
+      try { const s = localStorage.getItem(progressKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+    const clearResearchProgress = (trackSlug, date, raceNum) => {
+      try { localStorage.removeItem(progressKey(trackSlug, date, raceNum)); } catch (e) {}
+    };
+
     // ================================================================
     // Brisnet Single File Parser
     // ================================================================
@@ -1227,23 +1242,44 @@
         content = prompt;
       }
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          model: modelId,
-          max_tokens: maxTokens,
-          messages: [{ role: "user", content }],
-          tools: tools.length > 0 ? tools : undefined
-        })
-      });
+      let response;
+      try {
+        response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            model: modelId,
+            max_tokens: maxTokens,
+            messages: [{ role: "user", content }],
+            tools: tools.length > 0 ? tools : undefined
+          })
+        });
+      } catch (fetchErr) {
+        // Network error (Failed to fetch, connection drop, timeout, Android killed connection)
+        if (_retryCount < 3) {
+          const waitSec = [5, 10, 20][_retryCount];
+          console.warn(`Network error (attempt ${_retryCount + 1}/3), retrying in ${waitSec}s...`, fetchErr.message);
+          window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'network' } }));
+          await new Promise(r => setTimeout(r, waitSec * 1000));
+          return callClaude({ apiKey, modelId, prompt, imageData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+        }
+        throw new Error(`Network error after 3 retries: ${fetchErr.message}. Check your connection.`);
+      }
 
       // v7.1: Auto-retry on rate limit (429) with exponential backoff
       if (response.status === 429 && _retryCount < 3) {
         const waitSec = [15, 30, 60][_retryCount];
         console.warn(`Rate limited (attempt ${_retryCount + 1}/3), waiting ${waitSec}s...`);
-        // Dispatch a custom event so UI can show retry status
-        window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1 } }));
+        window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'rate_limit' } }));
+        await new Promise(r => setTimeout(r, waitSec * 1000));
+        return callClaude({ apiKey, modelId, prompt, imageData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+      }
+
+      // v7.1: Auto-retry on server errors (500, 502, 503, 529) with backoff
+      if ([500, 502, 503, 529].includes(response.status) && _retryCount < 2) {
+        const waitSec = [10, 20][_retryCount];
+        console.warn(`Server error ${response.status} (attempt ${_retryCount + 1}/2), retrying in ${waitSec}s...`);
+        window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'server' } }));
         await new Promise(r => setTimeout(r, waitSec * 1000));
         return callClaude({ apiKey, modelId, prompt, imageData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
       }
@@ -2112,7 +2148,24 @@ LIVE TRACK CONDITIONS:
           // Phase 1: per-horse research, with PP data injected if available
           // v7.1: Reduced concurrency (2 instead of 3) + inter-batch delay to avoid rate limits
           // v7.1: Use Haiku for research when PP data exists (cheaper, avoids rate limits), save Sonnet/Opus for synthesis
+          // v7.1: Save progress incrementally so we can resume if app is killed
           const horseResearch = [];
+
+          // Check for saved progress from a previous interrupted run
+          const savedProgress = selectedTrack && selectedRace
+            ? loadResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber) : null;
+          const resumeMap = new Map();
+          if (savedProgress?.horses) {
+            // Check if the saved progress is recent (within 30 min) and for the same horse set
+            const savedAge = (Date.now() - new Date(savedProgress.savedAt).getTime()) / 60000;
+            if (savedAge < 30) {
+              savedProgress.horses.forEach(h => { if (h.name) resumeMap.set(h.name.toLowerCase().trim(), h); });
+              if (resumeMap.size > 0) {
+                setProgress(`Resuming from ${resumeMap.size} previously researched horses...`);
+              }
+            }
+          }
+
           const concurrency = 2;
           for (let i = 0; i < validHorses.length; i += concurrency) {
             // Add a 3-second delay between batches (except the first batch)
@@ -2120,6 +2173,14 @@ LIVE TRACK CONDITIONS:
             const batch = validHorses.slice(i, i + concurrency);
             const batchResults = await Promise.all(batch.map(async (h, batchIdx) => {
               const stepIdx = i + batchIdx;
+
+              // v7.1: Skip if we already have this horse from a previous run
+              const cached = resumeMap.get(h.name.toLowerCase().trim());
+              if (cached) {
+                setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done', label: s.label + ' (cached)' } : s));
+                return cached;
+              }
+
               setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'active' } : s));
 
               // Find this horse in PP data (name match)
@@ -2246,6 +2307,10 @@ Return valid JSON only. Use null where info unavailable.`;
               }
             }));
             horseResearch.push(...batchResults);
+            // v7.1: Save progress after each batch in case app gets killed
+            if (selectedTrack && selectedRace) {
+              saveResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber, horseResearch);
+            }
           }
 
           // Phase 2: synthesis with pace school rigor
@@ -2367,6 +2432,8 @@ Return valid JSON only.`;
           if (selectedTrack && selectedRace) {
             saveAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber,
               fullAnalysis, conditions, entries, horses, raceCard, selectedTrack, selectedRace);
+            // Clear incremental progress — no longer needed
+            clearResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
           }
           setView('analysis');
         } catch (err) {
@@ -3078,6 +3145,31 @@ Trifecta: ${analysis.exotics.trifecta}`;
   </script>
 
   <script>
+    // v7.1: Auto-reload when Android kills the WebView
+    // When the page regains visibility after being backgrounded, check if React is still alive.
+    // If the app div is empty (React component tree was destroyed), force reload.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const appEl = document.getElementById('app');
+        // If the app div has no children or is empty, React was killed
+        if (appEl && (!appEl.firstChild || appEl.innerHTML.trim() === '')) {
+          console.warn('React component tree lost — reloading...');
+          window.location.reload();
+        }
+      }
+    });
+
+    // Also handle the 'resume' event for PWAs and the pageshow event for bfcache
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) {
+        // Page was restored from bfcache — check if React is alive
+        const appEl = document.getElementById('app');
+        if (appEl && (!appEl.firstChild || appEl.innerHTML.trim() === '')) {
+          window.location.reload();
+        }
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js').catch(err => console.log('SW failed:', err));
