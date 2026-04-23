@@ -1202,7 +1202,7 @@
       reader.readAsDataURL(file);
     });
 
-    const callClaude = async ({ apiKey, modelId, prompt, imageData, useWebFetch = false, useWebSearch = false, maxTokens = 8000 }) => {
+    const callClaude = async ({ apiKey, modelId, prompt, imageData, useWebFetch = false, useWebSearch = false, maxTokens = 8000, _retryCount = 0 }) => {
       const tools = [];
       const headers = {
         "Content-Type": "application/json",
@@ -1237,6 +1237,16 @@
           tools: tools.length > 0 ? tools : undefined
         })
       });
+
+      // v7.1: Auto-retry on rate limit (429) with exponential backoff
+      if (response.status === 429 && _retryCount < 3) {
+        const waitSec = [15, 30, 60][_retryCount];
+        console.warn(`Rate limited (attempt ${_retryCount + 1}/3), waiting ${waitSec}s...`);
+        // Dispatch a custom event so UI can show retry status
+        window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1 } }));
+        await new Promise(r => setTimeout(r, waitSec * 1000));
+        return callClaude({ apiKey, modelId, prompt, imageData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+      }
 
       if (!response.ok) {
         const errText = await response.text();
@@ -2072,14 +2082,21 @@ Use null for any field you can't determine. Return valid JSON only.`;
       };
 
       const runAnalysis = async () => {
-        const validHorses = horses.filter(h => h.name.trim());
-        if (validHorses.length < 2) { setError('Need at least 2 horses'); return; }
+        // v7.1: Filter out scratched horses
+        const validHorses = horses.filter(h => h.name.trim() && !h.scratched);
+        if (validHorses.length < 2) { setError('Need at least 2 non-scratched horses'); return; }
 
         setLoading(true); setError(null); setAnalysis(null);
         const model = MODELS[selectedModel];
         const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Researching ${h.name}`, status: 'pending' }));
         steps.push({ id: 'synthesis', label: 'Pace projection, picks, exotics (synthesis)', status: 'pending' });
         setProgressSteps(steps);
+
+        // v7.1: Listen for rate-limit retries so we can show status
+        const retryHandler = (e) => {
+          setProgress(`Rate limited — retrying in ${e.detail.wait}s (attempt ${e.detail.attempt}/3)...`);
+        };
+        window.addEventListener('claude-retry', retryHandler);
 
         try {
           const conditionsContext = conditions ? `
@@ -2093,9 +2110,13 @@ LIVE TRACK CONDITIONS:
 ` : '';
 
           // Phase 1: per-horse research, with PP data injected if available
+          // v7.1: Reduced concurrency (2 instead of 3) + inter-batch delay to avoid rate limits
+          // v7.1: Use Haiku for research when PP data exists (cheaper, avoids rate limits), save Sonnet/Opus for synthesis
           const horseResearch = [];
-          const concurrency = 3;
+          const concurrency = 2;
           for (let i = 0; i < validHorses.length; i += concurrency) {
+            // Add a 3-second delay between batches (except the first batch)
+            if (i > 0) await new Promise(r => setTimeout(r, 3000));
             const batch = validHorses.slice(i, i + concurrency);
             const batchResults = await Promise.all(batch.map(async (h, batchIdx) => {
               const stepIdx = i + batchIdx;
@@ -2207,9 +2228,12 @@ Return ONLY JSON:
 Return valid JSON only. Use null where info unavailable.`;
 
               try {
+                // v7.1: Use Haiku for per-horse research when PP data exists (cheaper + avoids rate limits)
+                // Only the synthesis step needs the full model. Research is mostly extraction work.
+                const researchModel = ppHorse ? MODELS.haiku.id : model.id;
                 const { data } = await callClaude({
                   apiKey,
-                  modelId: model.id,
+                  modelId: researchModel,
                   prompt: horsePrompt,
                   useWebSearch: !ppHorse, // skip web search if we have PP data
                   maxTokens: 2500
@@ -2349,6 +2373,7 @@ Return valid JSON only.`;
           console.error(err);
           setError(`Analysis failed: ${err.message}`);
         } finally {
+          window.removeEventListener('claude-retry', retryHandler);
           setLoading(false);
           setProgress('');
         }
@@ -2701,20 +2726,40 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 </div>
                 {horses.map((h, idx) => {
                   const hasPPMatch = currentPP?.horses?.some(pph => pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim());
+                  const isScratched = h.scratched;
                   return (
-                    <div key={idx} className={`horse-card ${hasPPMatch ? 'has-pp' : ''}`}>
+                    <div key={idx} className={`horse-card ${hasPPMatch ? 'has-pp' : ''}`} style={isScratched ? { opacity: 0.4, textDecoration: 'line-through', position: 'relative' } : {}}>
                       <div className="horse-header">
                         <span className="post-number">{h.postPosition || idx + 1}</span>
-                        <input className="horse-name-input" placeholder="Horse name" value={h.name} onChange={e => updateHorse(idx, 'name', e.target.value)} />
+                        <input className="horse-name-input" placeholder="Horse name" value={h.name} onChange={e => updateHorse(idx, 'name', e.target.value)} disabled={isScratched} />
                         {hasPPMatch && <span className="pp-badge">PP</span>}
-                        {horses.length > 1 && <button className="x-btn" onClick={() => removeHorse(idx)}><IconX /></button>}
+                        <button
+                          className="ghost-btn"
+                          onClick={() => updateHorse(idx, 'scratched', !isScratched)}
+                          style={{
+                            fontSize: '0.7rem', padding: '0.2rem 0.5rem', minWidth: 'auto',
+                            color: isScratched ? '#6ee7b7' : '#fb7185',
+                            borderColor: isScratched ? '#6ee7b7' : '#fb7185'
+                          }}
+                          title={isScratched ? 'Unscratch' : 'Mark as scratched'}
+                        >
+                          {isScratched ? 'Unscratch' : 'SCR'}
+                        </button>
+                        {horses.length > 1 && !isScratched && <button className="x-btn" onClick={() => removeHorse(idx)}><IconX /></button>}
                       </div>
-                      <div className="horse-details grid-4">
-                        <input placeholder="Post #" value={h.postPosition} onChange={e => updateHorse(idx, 'postPosition', e.target.value)} />
-                        <input placeholder="Jockey" value={h.jockey} onChange={e => updateHorse(idx, 'jockey', e.target.value)} />
-                        <input placeholder="Trainer" value={h.trainer} onChange={e => updateHorse(idx, 'trainer', e.target.value)} />
-                        <input placeholder="ML odds" value={h.morningLine} onChange={e => updateHorse(idx, 'morningLine', e.target.value)} />
-                      </div>
+                      {!isScratched && (
+                        <div className="horse-details grid-4">
+                          <input placeholder="Post #" value={h.postPosition} onChange={e => updateHorse(idx, 'postPosition', e.target.value)} />
+                          <input placeholder="Jockey" value={h.jockey} onChange={e => updateHorse(idx, 'jockey', e.target.value)} />
+                          <input placeholder="Trainer" value={h.trainer} onChange={e => updateHorse(idx, 'trainer', e.target.value)} />
+                          <input placeholder="ML odds" value={h.morningLine} onChange={e => updateHorse(idx, 'morningLine', e.target.value)} />
+                        </div>
+                      )}
+                      {isScratched && (
+                        <div style={{ textDecoration: 'none', fontStyle: 'italic', color: '#fb7185', fontSize: '0.8rem', padding: '0.25rem 0' }}>
+                          Scratched — excluded from analysis
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -2784,6 +2829,30 @@ Trifecta: ${analysis.exotics.trifecta}`;
                       {!isDifferentDay && isOld && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic' }}>· conditions may have changed</span>}
                     </div>
                     <button className="ghost-btn" onClick={() => { setAnalysis(null); setAnalysisTimestamp(null); runAnalysis(); }} disabled={loading}>
+                      <IconRefresh /> Re-run
+                    </button>
+                  </div>
+                );
+              })()}
+
+              {/* v7.1: Warn if any pick was since scratched */}
+              {analysis && (() => {
+                const scratchedNames = horses.filter(h => h.scratched).map(h => h.name.toLowerCase().trim());
+                if (scratchedNames.length === 0) return null;
+                const pickedNames = [analysis.topPicks?.win, analysis.topPicks?.place, analysis.topPicks?.show, analysis.topPicks?.longshot]
+                  .filter(Boolean).map(p => p.name?.toLowerCase().trim());
+                const hitScratches = pickedNames.filter(n => scratchedNames.includes(n));
+                if (hitScratches.length === 0) return null;
+                return (
+                  <div style={{
+                    padding: '0.6rem 0.9rem', marginBottom: '1rem',
+                    background: 'rgba(251, 113, 133, 0.12)', border: '1px solid rgba(251, 113, 133, 0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem'
+                  }}>
+                    <div style={{ fontSize: '0.85rem', color: '#fb7185' }}>
+                      ⚠ A pick in this analysis has been scratched. Re-run for updated picks.
+                    </div>
+                    <button className="ghost-btn" onClick={() => { setAnalysis(null); setAnalysisTimestamp(null); runAnalysis(); }} disabled={loading} style={{ color: '#fb7185', borderColor: '#fb7185' }}>
                       <IconRefresh /> Re-run
                     </button>
                   </div>
