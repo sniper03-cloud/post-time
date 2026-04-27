@@ -152,7 +152,7 @@
     #installPrompt button { background: #fcd34d; color: #0c0a09; border: none; padding: 0.5rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; }
     .icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .empty-state { text-align: center; padding: 2rem 1rem; color: #78716c; font-style: italic; }
-    .track-info-bar { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 0.75rem 1rem; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #a8a29e; text-transform: uppercase; }
+    .track-info-bar { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 0.75rem 1rem; margin-bottom: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: #a8a29e; text-transform: uppercase; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
     .track-info-bar strong { color: #fda4af; font-weight: 600; }
     .conditions-panel { background: rgba(28, 25, 23, 0.4); border: 1px solid #292524; padding: 1rem; margin-bottom: 1rem; }
     .conditions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 0.5rem; }
@@ -300,8 +300,31 @@
     const MODELS = {
       haiku: { id: 'claude-haiku-4-5-20251001', name: 'Haiku 4.5', priceNote: '~$0.50 / race', desc: 'Fast and cheap. Low-stakes races.' },
       sonnet: { id: 'claude-sonnet-4-5', name: 'Sonnet 4.5', priceNote: '~$1.50 / race', desc: 'Recommended default. Strong analysis.' },
-      opus: { id: 'claude-opus-4-7', name: 'Opus 4.7', priceNote: '~$3-5 / race', desc: 'Deepest research. For stakes and big bets.' }
+      opus: { id: 'claude-sonnet-4-6', name: 'Sonnet 4.6', priceNote: '~$2 / race', desc: 'Latest Sonnet. Stronger analysis, lower cost than Opus.' }
     };
+
+    // Storage helpers — race card cache
+    const racecardStorageKey = (trackSlug, date) => `racecard:${trackSlug}:${date}`;
+    const saveRacecard = (trackSlug, date, data) => {
+      try { localStorage.setItem(racecardStorageKey(trackSlug, date), JSON.stringify({ data, cachedAt: Date.now() })); return true; }
+      catch (e) { return false; }
+    };
+    const loadRacecard = (trackSlug, date) => {
+      try { const s = localStorage.getItem(racecardStorageKey(trackSlug, date)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+
+    // Storage helpers — entries cache
+    const entriesStorageKey = (trackSlug, date, raceNum) => `entries:${trackSlug}:${date}:race${raceNum}`;
+    const saveEntries = (trackSlug, date, raceNum, data) => {
+      try { localStorage.setItem(entriesStorageKey(trackSlug, date, raceNum), JSON.stringify({ data, cachedAt: Date.now() })); return true; }
+      catch (e) { return false; }
+    };
+    const loadEntries = (trackSlug, date, raceNum) => {
+      try { const s = localStorage.getItem(entriesStorageKey(trackSlug, date, raceNum)); return s ? JSON.parse(s) : null; }
+      catch (e) { return null; }
+    };
+    const cacheAgeMin = (cachedAt) => Math.round((Date.now() - cachedAt) / 60000);
 
     // Storage helpers — PP data (historical)
     const ppStorageKey = (trackSlug, date, raceNum) => `pp:${trackSlug}:${date}:race${raceNum}`;
@@ -2062,8 +2085,17 @@ The slug must match the URL path used in HTML links. Return valid JSON only.`;
         } finally { setLoading(false); setProgress(''); }
       };
 
-      const fetchRaceCard = async (track) => {
+      const fetchRaceCard = async (track, forceRefresh = false) => {
         setSelectedTrack(track);
+        // Serve from cache unless forced
+        if (!forceRefresh) {
+          const cached = loadRacecard(track.slug, selectedDate);
+          if (cached) {
+            setRaceCard({ ...cached.data, _cachedAt: cached.cachedAt });
+            setView('races');
+            return;
+          }
+        }
         setLoading(true); setError(null); setRaceCard(null);
         setProgress(`Loading ${track.name} race card...`);
         try {
@@ -2073,15 +2105,29 @@ Parse the full race card. Return ONLY JSON:
 { "trackName": "${track.name}", "date": "${selectedDate}", "races": [{ "raceNumber": 1, "postTime": "12:40 PM", "distance": "6 1/2 Furlongs", "surface": "Dirt", "raceName": "Race 1 or stakes name", "conditions": "Brief conditions", "purse": "$7,500", "fieldSize": 9, "isStakes": false }] }
 Return valid JSON only.`;
           const { data } = await callClaude({ apiKey, modelId: MODELS.haiku.id, prompt, useWebFetch: true });
-          setRaceCard(data);
+          saveRacecard(track.slug, selectedDate, data);
+          setRaceCard({ ...data, _cachedAt: Date.now() });
           setView('races');
         } catch (err) {
           setError(`Could not fetch race card: ${err.message}`);
         } finally { setLoading(false); setProgress(''); }
       };
 
-      const fetchEntries = async (race) => {
+      const fetchEntries = async (race, forceRefresh = false) => {
         setSelectedRace(race);
+        // Serve from cache unless forced
+        if (!forceRefresh) {
+          const cached = loadEntries(selectedTrack.slug, selectedDate, race.raceNumber);
+          if (cached) {
+            const entriesData = cached.data;
+            setEntries(entriesData);
+            setHorses(entriesData.entries.filter(e => !e.scratched).map(e => ({
+              postPosition: e.postPosition, name: e.horseName, jockey: e.jockey || '', trainer: e.trainer || '', morningLine: e.morningLine || ''
+            })));
+            setView('entries');
+            return;
+          }
+        }
         setLoading(true); setError(null); setEntries(null); setConditions(null);
         setProgress(`Loading entries for Race ${race.raceNumber}...`);
         try {
@@ -2099,6 +2145,7 @@ Return valid JSON only.`;
           if (entriesResult.status === 'rejected') throw entriesResult.reason;
 
           const entriesData = entriesResult.value.data;
+          saveEntries(selectedTrack.slug, selectedDate, race.raceNumber, entriesData);
           setEntries(entriesData);
           setHorses(entriesData.entries.filter(e => !e.scratched).map(e => ({
             postPosition: e.postPosition, name: e.horseName, jockey: e.jockey || '', trainer: e.trainer || '', morningLine: e.morningLine || ''
@@ -2689,7 +2736,12 @@ Trifecta: ${analysis.exotics.trifecta}`;
 
           {view === 'races' && raceCard && (
             <>
-              <div className="track-info-bar"><strong>{raceCard.trackName}</strong> · {prettyDate} · {raceCard.races.length} races · {scannedRaces.size} scanned</div>
+              <div className="track-info-bar">
+                <span><strong>{raceCard.trackName}</strong> · {prettyDate} · {raceCard.races.length} races · {scannedRaces.size} scanned{raceCard._cachedAt ? ` · cached ${cacheAgeMin(raceCard._cachedAt)}m ago` : ''}</span>
+                <button onClick={() => fetchRaceCard(selectedTrack, true)} disabled={loading} style={{ background: 'none', border: 'none', color: '#a8a29e', cursor: 'pointer', padding: '0 0.25rem', lineHeight: 1 }} title="Refresh race card">
+                  <IconRefresh />
+                </button>
+              </div>
               <h2 style={{ marginBottom: '1rem' }}>Race Card</h2>
               <div className="race-list">
                 {raceCard.races.map(race => {
