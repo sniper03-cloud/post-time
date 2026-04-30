@@ -2071,13 +2071,13 @@ RULES:
           const url = `https://entries.horseracingnation.com/entries-results/${selectedDate}`;
           const prompt = `Fetch this URL: ${url}
 
-It lists all North American thoroughbred tracks running on ${selectedDate}. Parse the "Tracks" table. Skip harness tracks.
+List every thoroughbred track running on ${selectedDate}. Include all tracks regardless of whether it is a normal day or a major stakes day (e.g. Churchill Downs on Oaks/Derby day must be included). Skip harness/standardbred tracks only.
 
 Return ONLY valid JSON:
 { "date": "${selectedDate}", "tracks": [{ "name": "Track Name", "slug": "track-slug-as-in-url", "firstPost": "12:40 PM", "totalRaces": 10, "avgFieldSize": 7.4, "totalPurses": "$221,000" }] }
 
-The slug must match the URL path used in HTML links. Return valid JSON only.`;
-          const { data } = await callClaude({ apiKey, modelId: MODELS.haiku.id, prompt, useWebFetch: true });
+The slug must exactly match the URL path segment used in links on the page (e.g. "churchill-downs"). Return valid JSON only.`;
+          const { data } = await callClaude({ apiKey, modelId: MODELS.sonnet.id, prompt, useWebFetch: true });
           setTracksForDay(data);
           setView('tracks');
         } catch (err) {
