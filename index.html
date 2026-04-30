@@ -1884,6 +1884,9 @@ RULES:
       const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('postTime_model') || 'sonnet');
 
       const [tracksForDay, setTracksForDay] = useState(null);
+      const [showAddTrack, setShowAddTrack] = useState(false);
+      const [manualTrackName, setManualTrackName] = useState('');
+      const [manualTrackSlug, setManualTrackSlug] = useState('');
       // Hydrate selectedTrack stub from saved nav so downstream logic can fetch race card
       const [selectedTrack, setSelectedTrack] = useState(
         savedNav?.trackSlug ? { slug: savedNav.trackSlug, name: savedNav.trackName || savedNav.trackSlug } : null
@@ -2083,6 +2086,18 @@ The slug must exactly match the URL path segment used in links on the page (e.g.
         } catch (err) {
           setError(`Could not fetch tracks: ${err.message}`);
         } finally { setLoading(false); setProgress(''); }
+      };
+
+      const addManualTrack = () => {
+        const name = manualTrackName.trim();
+        const slug = manualTrackSlug.trim().toLowerCase().replace(/\s+/g, '-');
+        if (!name || !slug) return;
+        const track = { name, slug, firstPost: '', totalRaces: '', totalPurses: '' };
+        setTracksForDay(prev => prev
+          ? { ...prev, tracks: [...prev.tracks.filter(t => t.slug !== slug), track] }
+          : { date: selectedDate, tracks: [track] }
+        );
+        setManualTrackName(''); setManualTrackSlug(''); setShowAddTrack(false);
       };
 
       const fetchRaceCard = async (track, forceRefresh = false) => {
@@ -2713,8 +2728,22 @@ Trifecta: ${analysis.exotics.trifecta}`;
               <div className="track-info-bar"><strong>{prettyDate}</strong> · {tracksForDay.tracks.length} {tracksForDay.tracks.length === 1 ? 'track' : 'tracks'} racing</div>
               {tracksForDay.tracks.length === 0 ? (
                 <div className="empty-state">
-                  <p>No thoroughbred tracks racing on {prettyDate}.</p>
+                  <p>No thoroughbred tracks found for {prettyDate}.</p>
                   <button className="ghost-btn" onClick={goHome} style={{ marginTop: '1rem', margin: '1rem auto 0' }}><IconArrowLeft /> Pick a different date</button>
+                  <div style={{ marginTop: '1rem' }}>
+                    {!showAddTrack ? (
+                      <button className="ghost-btn" style={{ width: '100%' }} onClick={() => setShowAddTrack(true)}>+ Add track manually</button>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.75rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid #44403c' }}>
+                        <input type="text" placeholder="Track name (e.g. Churchill Downs)" value={manualTrackName} onChange={e => setManualTrackName(e.target.value)} style={{ background: '#1c1917', border: '1px solid #44403c', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#e7e5e4', fontSize: '14px' }} />
+                        <input type="text" placeholder="Slug (e.g. churchill-downs)" value={manualTrackSlug} onChange={e => setManualTrackSlug(e.target.value)} onKeyDown={e => e.key === 'Enter' && addManualTrack()} style={{ background: '#1c1917', border: '1px solid #44403c', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#e7e5e4', fontSize: '14px' }} />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="primary-btn" style={{ flex: 1 }} onClick={addManualTrack}>Add</button>
+                          <button className="ghost-btn" style={{ flex: 1 }} onClick={() => { setShowAddTrack(false); setManualTrackName(''); setManualTrackSlug(''); }}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <>
@@ -2729,6 +2758,29 @@ Trifecta: ${analysis.exotics.trifecta}`;
                     ))}
                   </div>
                   {loading && (<div style={{ marginTop: '1.5rem', textAlign: 'center', color: '#fcd34d', fontStyle: 'italic', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}><div className="spinner-amber"></div> {progress}</div>)}
+                  <div style={{ marginTop: '1rem' }}>
+                    {!showAddTrack ? (
+                      <button className="ghost-btn" style={{ width: '100%' }} onClick={() => setShowAddTrack(true)}>+ Add track manually</button>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '0.75rem', background: 'rgba(255,255,255,0.04)', borderRadius: '8px', border: '1px solid #44403c' }}>
+                        <input
+                          type="text" placeholder="Track name (e.g. Churchill Downs)"
+                          value={manualTrackName} onChange={e => setManualTrackName(e.target.value)}
+                          style={{ background: '#1c1917', border: '1px solid #44403c', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#e7e5e4', fontSize: '14px' }}
+                        />
+                        <input
+                          type="text" placeholder="Slug (e.g. churchill-downs)"
+                          value={manualTrackSlug} onChange={e => setManualTrackSlug(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && addManualTrack()}
+                          style={{ background: '#1c1917', border: '1px solid #44403c', borderRadius: '6px', padding: '0.5rem 0.75rem', color: '#e7e5e4', fontSize: '14px' }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="primary-btn" style={{ flex: 1 }} onClick={addManualTrack}>Add</button>
+                          <button className="ghost-btn" style={{ flex: 1 }} onClick={() => { setShowAddTrack(false); setManualTrackName(''); setManualTrackSlug(''); }}>Cancel</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </>
