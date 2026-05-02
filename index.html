@@ -2955,6 +2955,32 @@ Trifecta: ${analysis.exotics.trifecta}`;
                   );
                 })}
                 <button className="add-btn" onClick={addHorse}><IconPlus /> Add Horse</button>
+                {currentPP?.horses?.length > 0 && (() => {
+                  const missingFromPP = currentPP.horses.filter(pph =>
+                    !horses.some(h => h.name.toLowerCase().trim() === pph.horseName?.toLowerCase().trim())
+                  );
+                  if (missingFromPP.length === 0) return null;
+                  const fillFromPP = () => {
+                    const toAdd = missingFromPP.map(pph => ({
+                      postPosition: pph.postPosition || pph.programNumber || '',
+                      name: pph.horseName || '',
+                      jockey: pph.jockey || '',
+                      trainer: pph.trainer || '',
+                      morningLine: pph.morningLine ? String(pph.morningLine) : ''
+                    }));
+                    setHorses(prev => [...prev, ...toAdd].sort((a, b) => {
+                      const pa = parseFloat(a.postPosition) || 999;
+                      const pb = parseFloat(b.postPosition) || 999;
+                      return pa - pb;
+                    }));
+                  };
+                  return (
+                    <div style={{ marginTop: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '0.8rem', color: '#fcd34d' }}>{missingFromPP.length} horse{missingFromPP.length !== 1 ? 's' : ''} in PP data not in field: {missingFromPP.map(p => p.horseName).join(', ')}</span>
+                      <button className="ghost-btn" style={{ whiteSpace: 'nowrap', fontSize: '0.75rem', padding: '0.25rem 0.6rem' }} onClick={fillFromPP}>Add from DRF</button>
+                    </div>
+                  );
+                })()}
               </section>
 
               <section>
