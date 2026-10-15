@@ -1,3 +1,7 @@
+# Local patch v8.0.1 — API-key recovery
+
+Not deployed automatically; user requested manual GitHub upload. Upload index.html and service-worker.js together. API key settings is available on every screen; typing uses a separate draft, Save commits the key, Remove deletes only the credential. HTTP 401 opens the key editor and stops further sequential horse research. Tested typing/save/reopen/remove in a local browser with a placeholder, plus JSX compilation and existing analysis tests.
+
 # Current release: v8 (October 15, 2026)
 
 This section supersedes the historical v7 notes below.

@@ -1356,6 +1356,12 @@
 
       if (!response.ok) {
         const errText = await response.text();
+        if (response.status === 401) {
+          window.dispatchEvent(new CustomEvent('claude-auth-error'));
+          const authError = new Error('API key rejected. Open API key settings to save a new Anthropic key.');
+          authError.authFailed = true;
+          throw authError;
+        }
         if (response.status === 404) throw new Error(`Model ${modelId} is not available to this API key. Check model access in Anthropic Console; no substitute model was used.`);
         throw new Error(`API ${response.status}: ${errText.slice(0, 400)}`);
       }
@@ -1925,6 +1931,9 @@ RULES:
 
       const [view, setView] = useState(savedNav?.view || 'home');
       const [apiKey, setApiKey] = useState(() => localStorage.getItem('postTime_apiKey') || '');
+      const [keyEditorOpen, setKeyEditorOpen] = useState(false);
+      const [draftApiKey, setDraftApiKey] = useState('');
+      const [keyNotice, setKeyNotice] = useState('');
       const [selectedDate, setSelectedDate] = useState(savedNav?.date || formatDate(new Date()));
       const [selectedModel, setSelectedModel] = useState(() => ['sonnet', 'opus'].includes(localStorage.getItem('postTime_model')) ? localStorage.getItem('postTime_model') : 'sonnet');
 
@@ -1962,6 +1971,17 @@ RULES:
       const [progress, setProgress] = useState('');
       const [progressSteps, setProgressSteps] = useState([]);
       const [copied, setCopied] = useState(false);
+
+      useEffect(() => {
+        const onAuthError = () => {
+          setKeyEditorOpen(true);
+          setKeyNotice('The saved API key was rejected. Paste a new Anthropic key below and save it.');
+          setScanModalRace(null);
+          setToteModalRace(null);
+        };
+        window.addEventListener('claude-auth-error', onAuthError);
+        return () => window.removeEventListener('claude-auth-error', onAuthError);
+      }, []);
 
       useEffect(() => { if (apiKey) localStorage.setItem('postTime_apiKey', apiKey); else localStorage.removeItem('postTime_apiKey'); }, [apiKey]);
       useEffect(() => { localStorage.setItem('postTime_model', selectedModel); }, [selectedModel]);
@@ -2386,6 +2406,7 @@ Return valid JSON only. Use null where info unavailable.`;
                 setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done' } : s));
                 return data;
               } catch (e) {
+                if (e.authFailed) throw e;
                 setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done', label: s.label + ' (partial)' } : s));
                 return { postPosition: h.postPosition, name: h.name, runningStyle: 'Unknown', lastRaces: 'Research failed', speedFigures: null, research: `Error: ${e.message}`, concerns: "Research unavailable; do not infer ability", confidence: 1 };
               }
@@ -2687,6 +2708,30 @@ Trifecta: ${analysis.exotics.trifecta}`;
             <p className="tagline">Load the past performances. Capture the tote. Find the overlays.</p>
           </header>
 
+          <div style={{ marginBottom: '1rem' }}>
+            <button className="ghost-btn" onClick={() => { setKeyEditorOpen(open => !open); setDraftApiKey(''); setKeyNotice(''); }} aria-expanded={keyEditorOpen || !apiKey}>API key settings</button>
+            {(keyEditorOpen || !apiKey) && (
+              <div className="api-key-banner">
+                <label htmlFor="anthropic-key">{apiKey ? 'Replace Anthropic API key' : 'Add Anthropic API key'}</label>
+                {keyNotice && <p role="status">{keyNotice}</p>}
+                <input id="anthropic-key" type="password" placeholder="Paste your full sk-ant-... key" autoComplete="off" autoCapitalize="none" spellCheck={false} value={draftApiKey} onChange={e => setDraftApiKey(e.target.value)} />
+                <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.75rem'}}>
+                  <button className="primary-btn" disabled={loading || !draftApiKey.trim()} onClick={() => {
+                    const nextKey = draftApiKey.trim();
+                    if (!nextKey) return;
+                    setApiKey(nextKey); setDraftApiKey(''); setKeyEditorOpen(false); setKeyNotice(''); setError(null);
+                    setView('home'); setScanModalRace(null); setToteModalRace(null);
+                  }}>Save key</button>
+                  {apiKey && <button className="ghost-btn" disabled={loading} onClick={() => {
+                    localStorage.removeItem('postTime_apiKey'); setApiKey(''); setDraftApiKey(''); setKeyNotice('Key removed from this browser.'); setError(null); setView('home');
+                  }}>Remove saved key</button>}
+                  {apiKey && <button className="ghost-btn" onClick={() => { setDraftApiKey(''); setKeyEditorOpen(false); }}>Cancel</button>}
+                </div>
+                <p className="hint">Saved only after you tap Save key. Create a replacement at <a href="https://console.anthropic.com" target="_blank" rel="noopener noreferrer">Anthropic Console</a>. Your saved races are kept.</p>
+              </div>
+            )}
+          </div>
+
           {view !== 'home' && (
             <div className="breadcrumb">
               <span className="crumb" onClick={goHome}>Home</span>
@@ -2704,13 +2749,6 @@ Trifecta: ${analysis.exotics.trifecta}`;
 
           {view === 'home' && (
             <>
-              {!apiKey && (
-                <div className="api-key-banner">
-                  <label>Anthropic API Key (one-time)</label>
-                  <input type="password" placeholder="sk-ant-..." value={apiKey} onChange={e => setApiKey(e.target.value)} />
-                  <p className="hint">Stored locally. Get one at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</p>
-                </div>
-              )}
               <div className="info-box">
                 <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>Post Time v8:</strong> Load your past performances, check scratches, and compare the whole field. Standard uses Sonnet 5.5; Deep review uses Opus 5.5. Add a fresh tote screenshot to evaluate prices.
               </div>
