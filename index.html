@@ -298,9 +298,47 @@
     const { useState, useEffect, useRef } = React;
 
     const MODELS = {
-      haiku: { id: 'claude-haiku-4-5-20251001', name: 'Haiku 4.5', priceNote: '~$0.50 / race', desc: 'Fast and cheap. Low-stakes races.' },
-      sonnet: { id: 'claude-sonnet-4-6', name: 'Sonnet 4.6', priceNote: '~$1.50 / race', desc: 'Recommended default. Strong analysis.' },
-      opus: { id: 'claude-sonnet-4-6', name: 'Sonnet 4.6', priceNote: '~$2 / race', desc: 'Latest Sonnet. Stronger analysis, lower cost than Opus.' }
+      haiku: { id: 'claude-haiku-5-5', name: 'Haiku 5.5', priceNote: 'Extraction', desc: 'Structured data extraction.' },
+      sonnet: { id: 'claude-sonnet-5-5', name: 'Sonnet 5.5', priceNote: 'Standard', desc: 'Balanced race analysis.' },
+      opus: { id: 'claude-opus-5-5', name: 'Opus 5.5', priceNote: 'Deep review', desc: 'More detailed comparative review.' }
+    };
+
+    const textSchema = { type: 'string' };
+    const objectSchema = properties => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
+    const pickSchema = objectSchema({ postPosition: textSchema, name: textSchema, reasoning: textSchema });
+    const analysisSchema = objectSchema({
+      paceAnalysis: objectSchema({
+        earlySpeedHorses: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, style: textSchema }) },
+        projectedLeader: textSchema, paceShape: { type: 'string', enum: ['HOT', 'HONEST', 'SOFT'] }, paceReasoning: textSchema,
+        paceSuitedStyles: { type: 'array', items: textSchema }
+      }),
+      paceScenario: textSchema, trackBias: textSchema, tripAngles: textSchema,
+      runnerAssessments: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, strengths: textSchema, concerns: textSchema, verdict: textSchema }) },
+      fieldProbabilities: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, winProbability: { type: 'number', minimum: 0, maximum: 1 } }) },
+      topPicks: objectSchema({ win: pickSchema, place: pickSchema, show: pickSchema, longshot: pickSchema }),
+      exotics: objectSchema({ exacta: textSchema, trifecta: textSchema, superfecta: textSchema, notes: textSchema }),
+      assessment: { type: 'string', enum: ['PASS', 'REVIEW PRICES'] },
+      uncertainty: textSchema, alternativePace: textSchema, summary: textSchema
+    });
+
+    const validateAnalysis = (data, field) => {
+      if (!Array.isArray(data.fieldProbabilities) || data.fieldProbabilities.length !== field.length) throw new Error('Analysis omitted runners. Please retry.');
+      const seen = new Set();
+      let total = 0;
+      for (const h of data.fieldProbabilities) {
+        const runner = field.find(f => String(f.postPosition) === String(h.postPosition) && f.name.trim().toLowerCase() === String(h.name).trim().toLowerCase());
+        const key = String(h.postPosition) + ':' + String(h.name).trim().toLowerCase();
+        if (!runner || seen.has(key) || typeof h.winProbability !== 'number' || !Number.isFinite(h.winProbability) || h.winProbability < 0 || h.winProbability > 1) throw new Error('Analysis returned invalid runners or probabilities. Please retry.');
+        seen.add(key); total += h.winProbability;
+      }
+      if (Math.abs(total - 1) > 0.05) throw new Error('Analysis probabilities do not sum to 100%. Please retry.');
+      data.fieldProbabilities.forEach(h => h.winProbability /= total);
+      for (const key of ['win', 'place', 'show', 'longshot']) {
+        const pick = data.topPicks?.[key];
+        if (!pick || !field.some(h => String(h.postPosition) === String(pick.postPosition) && h.name.trim().toLowerCase() === String(pick.name).trim().toLowerCase())) throw new Error('Analysis contains an invalid selection. Please retry.');
+      }
+      if (!Array.isArray(data.runnerAssessments) || data.runnerAssessments.length !== field.length || field.some(h => data.runnerAssessments.filter(r => r.name === h.name && String(r.postPosition) === String(h.postPosition) && ['strengths', 'concerns', 'verdict'].every(k => typeof r[k] === 'string')).length !== 1)) throw new Error('Runner explanations are incomplete. Please retry.');
+      if (!data.exotics || typeof data.summary !== 'string') throw new Error('Analysis is incomplete. Please retry.');
     };
 
     // Storage helpers — race card cache
@@ -383,12 +421,12 @@
       const frac = s.match(/^(\d+(?:\.\d+)?)\s*[-\/]\s*(\d+(?:\.\d+)?)$/);
       if (frac) {
         const n = parseFloat(frac[1]), d = parseFloat(frac[2]);
-        if (d === 0) return null;
+        if (d === 0 || !Number.isFinite(n / d)) return null;
         return n / d;
       }
       // Decimal "2.5" or "12"
       const dec = parseFloat(s);
-      if (!isNaN(dec)) return dec;
+      if (/^\d+(?:\.\d+)?$/.test(s) && Number.isFinite(dec) && dec >= 0) return dec;
       return null;
     };
 
@@ -441,8 +479,8 @@
     // v7.1: Incremental research progress — save each horse as it completes
     // so we can resume if Android kills the app mid-analysis
     const progressKey = (trackSlug, date, raceNum) => `progress:${trackSlug}:${date}:race${raceNum}`;
-    const saveResearchProgress = (trackSlug, date, raceNum, horseResults) => {
-      try { localStorage.setItem(progressKey(trackSlug, date, raceNum), JSON.stringify({ horses: horseResults, savedAt: new Date().toISOString() })); }
+    const saveResearchProgress = (trackSlug, date, raceNum, horseResults, signature) => {
+      try { localStorage.setItem(progressKey(trackSlug, date, raceNum), JSON.stringify({ horses: horseResults, signature, savedAt: new Date().toISOString() })); }
       catch (e) { /* ignore */ }
     };
     const loadResearchProgress = (trackSlug, date, raceNum) => {
@@ -1240,7 +1278,7 @@
       reader.readAsDataURL(file);
     });
 
-    const callClaude = async ({ apiKey, modelId, prompt, imageData, documentData, useWebFetch = false, useWebSearch = false, maxTokens = 8000, _retryCount = 0 }) => {
+    const callClaude = async ({ apiKey, modelId, prompt, imageData, documentData, useWebFetch = false, useWebSearch = false, maxTokens = 8000, outputSchema, _retryCount = 0 }) => {
       const tools = [];
       const headers = {
         "Content-Type": "application/json",
@@ -1281,6 +1319,7 @@
           body: JSON.stringify({
             model: modelId,
             max_tokens: maxTokens,
+            output_config: outputSchema ? { format: { type: "json_schema", schema: outputSchema } } : undefined,
             messages: [{ role: "user", content }],
             tools: tools.length > 0 ? tools : undefined
           })
@@ -1292,7 +1331,7 @@
           console.warn(`Network error (attempt ${_retryCount + 1}/3), retrying in ${waitSec}s...`, fetchErr.message);
           window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'network' } }));
           await new Promise(r => setTimeout(r, waitSec * 1000));
-          return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+          return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, outputSchema, _retryCount: _retryCount + 1 });
         }
         throw new Error(`Network error after 3 retries: ${fetchErr.message}. Check your connection.`);
       }
@@ -1303,7 +1342,7 @@
         console.warn(`Rate limited (attempt ${_retryCount + 1}/3), waiting ${waitSec}s...`);
         window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'rate_limit' } }));
         await new Promise(r => setTimeout(r, waitSec * 1000));
-        return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+        return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, outputSchema, _retryCount: _retryCount + 1 });
       }
 
       // v7.1: Auto-retry on server errors (500, 502, 503, 529) with backoff
@@ -1312,15 +1351,19 @@
         console.warn(`Server error ${response.status} (attempt ${_retryCount + 1}/2), retrying in ${waitSec}s...`);
         window.dispatchEvent(new CustomEvent('claude-retry', { detail: { wait: waitSec, attempt: _retryCount + 1, reason: 'server' } }));
         await new Promise(r => setTimeout(r, waitSec * 1000));
-        return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, _retryCount: _retryCount + 1 });
+        return callClaude({ apiKey, modelId, prompt, imageData, documentData, useWebFetch, useWebSearch, maxTokens, outputSchema, _retryCount: _retryCount + 1 });
       }
 
       if (!response.ok) {
         const errText = await response.text();
+        if (response.status === 404) throw new Error(`Model ${modelId} is not available to this API key. Check model access in Anthropic Console; no substitute model was used.`);
         throw new Error(`API ${response.status}: ${errText.slice(0, 400)}`);
       }
 
       const data = await response.json();
+      if (data.usage) window.dispatchEvent(new CustomEvent('claude-usage', { detail: data.usage }));
+      if (data.stop_reason === 'max_tokens') throw new Error('The response was cut short. Try again with a smaller input or Standard analysis.');
+      if (data.stop_reason === 'refusal') throw new Error('The model could not complete this request.');
       const textBlocks = data.content.filter(item => item.type === "text").map(item => item.text).join("\n");
       let cleaned = textBlocks.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
       const firstBrace = cleaned.indexOf('{');
@@ -1865,6 +1908,8 @@ RULES:
     }
 
     function App() {
+      const [, setFreshnessTick] = useState(0);
+      useEffect(() => { const timer = setInterval(() => setFreshnessTick(t => t + 1), 60000); return () => clearInterval(timer); }, []);
       // v7.1: Restore navigation state from last session
       // Rules: (1) if saved date is in the past, snap to today and clear track/race
       //        (2) otherwise restore exactly where we were
@@ -1881,7 +1926,7 @@ RULES:
       const [view, setView] = useState(savedNav?.view || 'home');
       const [apiKey, setApiKey] = useState(() => localStorage.getItem('postTime_apiKey') || '');
       const [selectedDate, setSelectedDate] = useState(savedNav?.date || formatDate(new Date()));
-      const [selectedModel, setSelectedModel] = useState(() => localStorage.getItem('postTime_model') || 'sonnet');
+      const [selectedModel, setSelectedModel] = useState(() => ['sonnet', 'opus'].includes(localStorage.getItem('postTime_model')) ? localStorage.getItem('postTime_model') : 'sonnet');
 
       const [tracksForDay, setTracksForDay] = useState(null);
       const [showAddTrack, setShowAddTrack] = useState(false);
@@ -1918,7 +1963,7 @@ RULES:
       const [progressSteps, setProgressSteps] = useState([]);
       const [copied, setCopied] = useState(false);
 
-      useEffect(() => { if (apiKey) localStorage.setItem('postTime_apiKey', apiKey); }, [apiKey]);
+      useEffect(() => { if (apiKey) localStorage.setItem('postTime_apiKey', apiKey); else localStorage.removeItem('postTime_apiKey'); }, [apiKey]);
       useEffect(() => { localStorage.setItem('postTime_model', selectedModel); }, [selectedModel]);
 
       // v7.1: Persist navigation state on every transition
@@ -2200,15 +2245,18 @@ Use null for any field you can't determine. Return valid JSON only.`;
         setLoading(true); setError(null); setAnalysis(null);
         const model = MODELS[selectedModel];
         const synthModel = selectedModel === 'haiku' ? MODELS.sonnet : model;
-        const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Researching ${h.name}${currentPP ? ' (Haiku)' : ''}`, status: 'pending' }));
+        const steps = validHorses.map((h, i) => ({ id: `horse-${i}`, label: `Preparing evidence for ${h.name}`, status: 'pending' }));
         steps.push({ id: 'synthesis', label: `Synthesis — picks + probabilities (${synthModel.name})`, status: 'pending' });
         setProgressSteps(steps);
 
         // v7.1: Listen for rate-limit retries so we can show status
         const retryHandler = (e) => {
-          setProgress(`Rate limited — retrying in ${e.detail.wait}s (attempt ${e.detail.attempt}/3)...`);
+          setProgress(`${e.detail.reason === 'rate_limit' ? 'Rate limited' : 'Connection or server interrupted'} — retrying in ${e.detail.wait}s (attempt ${e.detail.attempt})...`);
         };
         window.addEventListener('claude-retry', retryHandler);
+        const usageTotals = { input_tokens: 0, output_tokens: 0 };
+        const usageHandler = e => { usageTotals.input_tokens += e.detail.input_tokens || 0; usageTotals.output_tokens += e.detail.output_tokens || 0; };
+        window.addEventListener('claude-usage', usageHandler);
 
         try {
           const conditionsContext = conditions ? `
@@ -2231,7 +2279,8 @@ LIVE TRACK CONDITIONS:
           const savedProgress = selectedTrack && selectedRace
             ? loadResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber) : null;
           const resumeMap = new Map();
-          if (savedProgress?.horses) {
+          const inputSignature = JSON.stringify({ horses: validHorses, pp: currentPP, conditions, model: model.id, version: 8 });
+          if (savedProgress?.horses && savedProgress.signature === inputSignature) {
             // Check if the saved progress is recent (within 30 min) and for the same horse set
             const savedAge = (Date.now() - new Date(savedProgress.savedAt).getTime()) / 60000;
             if (savedAge < 30) {
@@ -2245,7 +2294,7 @@ LIVE TRACK CONDITIONS:
           const concurrency = 2;
           for (let i = 0; i < validHorses.length; i += concurrency) {
             // Add a 3-second delay between batches (except the first batch)
-            if (i > 0) await new Promise(r => setTimeout(r, 3000));
+            if (i > 0 && !currentPP?.horses?.length) await new Promise(r => setTimeout(r, 3000));
             const batch = validHorses.slice(i, i + concurrency);
             const batchResults = await Promise.all(batch.map(async (h, batchIdx) => {
               const stepIdx = i + batchIdx;
@@ -2261,66 +2310,26 @@ LIVE TRACK CONDITIONS:
 
               // Find this horse in PP data (name match)
               const ppHorse = currentPP?.horses?.find(pph =>
-                pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim() ||
-                pph.postPosition === h.postPosition
+                pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim()
               );
 
-              let ppContext = '';
+              // Structured PP already contains the evidence. Preserve it for whole-field
+              // synthesis instead of paying to summarize each horse separately.
               if (ppHorse) {
-                const recentPPs = (ppHorse.pastPerformances || []).slice(0, 5);
-                const sourceLabel = currentPP.source === 'brisnet' ? '📊 BRISNET DATA FILE (structured, authoritative)' : '📷 SCANNED PROGRAM PAGES (OCR may be imperfect)';
-                const primePowerLine = ppHorse.brisPrimePower
-                  ? `\n- 🔑 BRIS Prime Power: ${ppHorse.brisPrimePower} (Brisnet's flagship composite rating — strong predictor)`
-                  : '';
-                // Brisnet-only: pre-computed running style (E/EP/P/S) and Quirin speed points (0-8)
-                const runStyleLine = ppHorse.brisRunStyle
-                  ? `\n- 🏇 BRIS Run Style: ${ppHorse.brisRunStyle} (E=front, EP=press, P=stalk, S=close)`
-                  : '';
-                const quirinLine = ppHorse.quirinSpeedPoints != null
-                  ? `\n- Quirin Speed Points: ${ppHorse.quirinSpeedPoints}/8 (higher = more early speed; 5+ is tactical)`
-                  : '';
-                const bestSpeedsLine = ppHorse.brisSpeedFigures
-                  ? `\n- Best BRIS Speed figures: life=${ppHorse.brisSpeedFigures.bestLife ?? '?'}, this year=${ppHorse.brisSpeedFigures.bestYear ?? '?'}, fast=${ppHorse.brisSpeedFigures.bestFast ?? '?'}, turf=${ppHorse.brisSpeedFigures.bestTurf ?? '?'}, off=${ppHorse.brisSpeedFigures.bestOff ?? '?'}, this-distance=${ppHorse.brisSpeedFigures.bestDistance ?? '?'}`
-                  : '';
-                const pedigreeRatingsLine = ppHorse.pedigreeRatings
-                  ? `\n- BRIS pedigree ratings: dirt=${ppHorse.pedigreeRatings.dirt || '?'}, mud=${ppHorse.pedigreeRatings.mud || '?'}, turf=${ppHorse.pedigreeRatings.turf || '?'}, dist=${ppHorse.pedigreeRatings.distance || '?'}`
-                  : '';
-                const trainerAnglesLine = (ppHorse.trainerAngles && ppHorse.trainerAngles.length)
-                  ? `\n- Trainer angles today: ${ppHorse.trainerAngles.map(a => `[${a.label}: ${a.starts} starts, ${a.winPct}% win, $${a.roi} ROI]`).join(' ')}`
-                  : '';
-
-                ppContext = `
-PROGRAM PP DATA — ${sourceLabel}:
-- Lifetime: ${JSON.stringify(ppHorse.lifetimeRecord)}
-- At this track: ${JSON.stringify(ppHorse.trackRecord)}
-- At this distance: ${JSON.stringify(ppHorse.distanceRecord)}
-- Turf record: ${JSON.stringify(ppHorse.turfRecord || {})}
-- Wet record: ${JSON.stringify(ppHorse.wetRecord || {})}${primePowerLine}${runStyleLine}${quirinLine}${bestSpeedsLine}${pedigreeRatingsLine}${trainerAnglesLine}
-- Days since last race: ${ppHorse.daysSinceLastRace ?? '?'}
-- Pedigree: by ${ppHorse.sire || '?'} out of ${ppHorse.dam || '?'} (${ppHorse.damSire ? `${ppHorse.damSire} line` : 'dam sire unknown'})
-- Medication: ${ppHorse.medication || 'none'} | Equipment change: ${ppHorse.equipmentChange || 'none'}
-- Recent races (most recent first):
-${recentPPs.map((pp, idx) => `  ${idx+1}. ${pp.date} ${pp.track || pp.trackCode} R${pp.raceNum}, ${pp.condition} ${pp.distance || pp.distanceYards + 'y'} ${pp.surface}, ${pp.raceType}${pp.raceClassification ? ` (${pp.raceClassification})` : ''}
-     BRIS Speed: ${pp.beyerFig ?? '?'} | Finish: ${pp.finishPosition ?? '?'} by ${pp.beatenLengths ?? '?'} L | Post: ${pp.postPosition ?? '?'} | Field: ${pp.numEntrants ?? '?'}
-     Running line: ${pp.runningLine || 'n/a'}
-     Fractions: ${(pp.fractions || []).join(' ')} | Final time: ${pp.finalTime ?? '?'}${pp.brisPace?.latePace ? ` | Late pace: ${pp.brisPace.latePace}` : ''}
-     Jockey: ${pp.jockey || '?'} @ ${pp.weight ?? '?'}lbs, Odds: ${pp.odds || '?'}${pp.favorite ? ' (was favorite)' : ''}${pp.tripComment ? `\n     🔔 Trip comment: "${pp.tripComment}"` : ''}${pp.topFinishers ? `\n     Top finishers: ${pp.topFinishers}` : ''}`).join('\n')}
-- Workouts (last 6): ${(ppHorse.workouts || []).slice(0, 6).map(w => `${w.date} ${w.track || ''} ${w.distance || ''} in ${w.time ?? '?'}${w.bullet ? ' ★BULLET' : ''} (${w.description || ''})${w.rank ? ` ${w.rank}` : ''}`).join(' | ') || 'none'}
-- Trainer stats (meet): ${JSON.stringify(ppHorse.trainerStats?.meet || {})}
-- Trainer stats (YTD): ${JSON.stringify(ppHorse.trainerStats?.currentYear || {})}
-- J/T combo (meet): ${JSON.stringify(ppHorse.jockeyTrainerCombo?.meet || {})}
-- J/T combo (365d): ${JSON.stringify(ppHorse.jockeyTrainerCombo?.last365 || {})}
-
-ANALYZE THIS PP DATA DIRECTLY. Key signals, in priority order:
-1. **BRIS Prime Power** (if present) is Brisnet's flagship composite — the single best predictor. Rank horses against field.
-2. **BRIS Run Style + Quirin Speed Points** — these pre-compute pace projection. Count the Es and EPs in the field; high Quirin points = more early speed.
-3. **Trip comments** (wide, steadied, blocked, checked, bumped, greened, rank) = classic overlay signal if horse finished close despite trouble. Flag in tripNote.
-4. **Speed figure trajectory** (going up, flat, regressing) matters as much as best fig.
-5. **Trainer angles** — when a specific pre-computed angle (e.g. "WonLastStart", "1stLasix", "Layoff45+") shows an ROI > $2.00 with 20+ starts, that's predictive.
-6. **Workout pattern** — bullets, sharp half-mile times, tight sequence = positive. Nothing fast = lukewarm.
-7. **Layoff angle** — daysSinceLastRace > 45 paired with sharp works or a trainer with good off-layoff ROI.`;
+                const recent = (ppHorse.pastPerformances || []).slice(0, 5);
+                setProgressSteps(prev => prev.map((step, idx) => idx === stepIdx ? { ...step, status: 'done', label: `${h.name}: PP evidence ready` } : step));
+                return {
+                  postPosition: h.postPosition, name: h.name,
+                  runningStyle: ppHorse.brisRunStyle || 'Unknown',
+                  speedFigures: recent.map(pp => `${pp.date || 'Date unknown'}: BRIS ${pp.beyerFig ?? '?'}`).join('; '),
+                  bestFig: null, lastRaces: recent.map(pp => `${pp.date || '?'} ${pp.track || pp.trackCode || ''}: finish ${pp.finishPosition ?? '?'}`).join('; '),
+                  angles: 'Evaluate full PP evidence in field context',
+                  concerns: 'See comparative assessment; extracted data may contain errors',
+                  tripNote: recent.filter(pp => pp.tripComment).map(pp => `${pp.date}: ${pp.tripComment}`).join('; ') || null,
+                  research: 'Structured PP evidence supplied directly to the whole-field analysis.',
+                  confidence: null
+                };
               }
-
               const horsePrompt = `You are a professional horse racing handicapper. Research this horse and return detailed analysis.
 
 HORSE: ${h.name} — Post ${h.postPosition}
@@ -2329,9 +2338,8 @@ JOCKEY: ${h.jockey} | TRAINER: ${h.trainer} | ML: ${h.morningLine}
 RACE: ${selectedTrack.name} Race ${selectedRace.raceNumber}, ${selectedRace.distance} ${selectedRace.surface}
 CONDITIONS: ${entries?.conditions || ''}
 ${conditionsContext}
-${ppContext}
 
-${ppHorse ? 'Since PP data is provided above, lean heavily on it. Web search only for news/equipment changes since the last PP.' : 'No PP data available — use web_search for recent past performances and speed figures.'}
+No PP data available — use web_search for recent past performances and speed figures. Cite sources and dates in the research summary. Distinguish BRIS from Beyer figures. Use null for unverified figures; never invent missing data.
 
 Research priorities:
 1. Last 3-5 race finishes with Beyer/speed figures
@@ -2367,7 +2375,7 @@ Return valid JSON only. Use null where info unavailable.`;
               try {
                 // v7.1: Use Haiku for per-horse research when PP data exists (cheaper + avoids rate limits)
                 // Only the synthesis step needs the full model. Research is mostly extraction work.
-                const researchModel = ppHorse ? MODELS.haiku.id : model.id;
+                const researchModel = MODELS.sonnet.id;
                 const { data } = await callClaude({
                   apiKey,
                   modelId: researchModel,
@@ -2379,13 +2387,13 @@ Return valid JSON only. Use null where info unavailable.`;
                 return data;
               } catch (e) {
                 setProgressSteps(prev => prev.map((s, idx) => idx === stepIdx ? { ...s, status: 'done', label: s.label + ' (partial)' } : s));
-                return { postPosition: h.postPosition, name: h.name, runningStyle: 'P', lastRaces: 'Research failed', speedFigures: null, research: `Error: ${e.message}`, confidence: 5 };
+                return { postPosition: h.postPosition, name: h.name, runningStyle: 'Unknown', lastRaces: 'Research failed', speedFigures: null, research: `Error: ${e.message}`, concerns: "Research unavailable; do not infer ability", confidence: 1 };
               }
             }));
             horseResearch.push(...batchResults);
             // v7.1: Save progress after each batch in case app gets killed
             if (selectedTrack && selectedRace) {
-              saveResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber, horseResearch);
+              saveResearchProgress(selectedTrack.slug, selectedDate, selectedRace.raceNumber, horseResearch, inputSignature);
             }
           }
 
@@ -2414,34 +2422,17 @@ ${conditionsContext}
 PER-HORSE RESEARCH:
 ${researchSummary}
 
-STEP-BY-STEP PACE ANALYSIS (do all steps rigorously):
+ANALYSIS PROTOCOL:
+Compare every active horse against this specific field. Use the structured PP evidence below directly, not just research summaries. Morning line and tote are not evidence of ability; form your probability estimates independently of market prices.
+1. Evaluate class and race conditions, surface/distance suitability, recency and form cycles. Distinguish BRIS speed figures from Beyer figures; do not convert or relabel them. Cite race dates and figures when available. Missing information stays unknown.
+2. Project pace from demonstrated early speed, draws, distance, and likely tactics. Do not assume a hot pace just because three horses have an E/EP label. Compare a main scenario and an alternative; explain which horses benefit and how uncertain the projection is.
+3. Assess documented trips in context. A troubled trip does not automatically imply improvement. Trainer angles require sample sizes; a positive small-sample ROI is not proof of an edge. Do not assert track bias from a weather label or a single result.
+4. Include every active runner exactly once in fieldProbabilities. Use the exact postPosition and name supplied. All probabilities must be finite, between 0 and 1, and sum to 1. They are unvalidated estimates, not calibrated facts. Do not force a favorite probability or unequal distribution when evidence does not support it.
+5. Identify missing evidence, conflicting signals, and sensitivity to scratches or pace. Set assessment to PASS when evidence is inadequate; otherwise REVIEW PRICES. Never force a wager or call a horse profitable without its offered payout. Exotics may explicitly say Pass; rankings are not probabilities of placing second or third.
+6. Give concise evidence-based explanations, not hidden chain-of-thought. Include every active runner exactly once in runnerAssessments, with evidence-based strengths, concerns, and verdict. Missing per-horse research is a reason to lower confidence or pass, never to invent findings.
 
-Step 1. Identify early-speed horses (E, EP). Count them. If 3+, pace will likely be HOT. If 1, pace will likely be CONTROLLED. If 2, depends on whether they pressure each other or settle.
-
-Step 2. Project the early leader. Who gets the lead, and is anyone pressing? Does the projected leader typically wire fields or get caught?
-
-Step 3. Project the pace shape. Expected fractional stress: hot / honest / soft. A hot pace helps closers (S) and late-pressers (P). A slow/controlled pace helps front-runners (E) and stalkers (EP).
-
-Step 4. Identify the pace-suited contenders. Which horses have the right style for the projected pace AND the figures/fitness to be live?
-
-Step 5. Track bias overlay. Does today's bias (from conditions) reinforce or contradict the pace conclusion?
-
-Step 6. Trip angle overlay. Any horses with documented trip bad luck last out (see tripNote) are candidates for improvement and may offer value beyond what raw figures suggest.
-
-Step 7. Pick Win/Place/Show/Longshot. Win = best pace+figure combo. Longshot = value angle (trip improver, class dropper, sharp work pattern, pace-suited bomb).
-
-Step 8. Exotic structure. Build exactas/tris/supers around pace-suited contenders; use trip-bad-luck and pace-suited bombs underneath for value.
-
-Step 9. CALIBRATED WIN PROBABILITIES. For every horse in the field (all ${validHorses.length}), output an implied probability of winning (0.0 to 1.0). CRITICAL CALIBRATION RULES:
-  - Probabilities across the field MUST sum to approximately 1.0 (between 0.95 and 1.05).
-  - A typical morning-line favorite in a competitive race wins ~25-35% of the time (prob 0.25-0.35).
-  - A second choice is usually ~15-22%.
-  - A third choice is usually ~10-15%.
-  - Mid-pack horses are 5-10%.
-  - Bombs and throwouts are 1-5%.
-  - Do NOT output a 10-horse race where everyone is 10%. That's a non-answer.
-  - Do NOT output a 10-horse race where the favorite is 70%. Real races have upset potential.
-  - Factor in: speed figures, pace suitability, trip angles, class, trainer angles, form trajectory, distance/surface fit.
+FULL ACTIVE-FIELD PP EVIDENCE (BRIS figures where supplied):
+${JSON.stringify((currentPP?.horses || []).filter(pp => validHorses.some(h => h.name.toLowerCase().trim() === pp.horseName?.toLowerCase().trim())))}
 
 Return ONLY JSON:
 
@@ -2473,7 +2464,11 @@ Return ONLY JSON:
     "superfecta": "e.g. '5 / 8 / 1,12 / 1,3,8,12'",
     "notes": "1-2 sentences on bankroll/ticket rationale"
   },
-  "summary": "3-4 sentence final take"
+  "runnerAssessments": [{ "postPosition": "1", "name": "Horse Name", "strengths": "Specific supporting PP evidence", "concerns": "Specific risks and missing evidence", "verdict": "Role in this field and scenario sensitivity" }],
+  "assessment": "PASS or REVIEW PRICES",
+  "uncertainty": "Specific missing evidence and reasons the estimate could change",
+  "alternativePace": "Plausible alternative scenario and the horses it helps",
+  "summary": "Concise evidence-based conclusion without promising an edge"
 }
 
 Return valid JSON only.`;
@@ -2481,20 +2476,25 @@ Return valid JSON only.`;
           // v7.1: Synthesis MUST use at least Sonnet — Haiku mangles the complex JSON structure.
           // Research uses Haiku (simple JSON, cheaper), synthesis uses Sonnet or better.
           const synthModelId = selectedModel === 'haiku' ? MODELS.sonnet.id : model.id;
-          const { data: synthData } = await callClaude({ apiKey, modelId: synthModelId, prompt: synthPrompt, maxTokens: 3000 });
+          const { data: synthData } = await callClaude({ apiKey, modelId: synthModelId, prompt: synthPrompt, maxTokens: 8000, outputSchema: analysisSchema });
 
           setProgressSteps(prev => prev.map((s, idx) => idx === synthIdx ? { ...s, status: 'done' } : s));
 
+          validateAnalysis(synthData, validHorses);
           const fullAnalysis = {
             ...synthData,
+            modelId: synthModelId,
+            analysisVersion: 8,
+            usage: usageTotals,
+            inputSignature,
             horses: horseResearch.map(hr => ({
               postPosition: hr.postPosition,
               name: hr.name,
-              runningStyle: hr.runningStyle || 'P',
+              runningStyle: hr.runningStyle || 'Unknown',
               keyStats: hr.speedFigures || hr.lastRaces || 'Limited data',
-              strengths: hr.angles || 'See research',
-              concerns: hr.concerns || 'None noted',
-              verdict: hr.fitness ? `${hr.fitness} — ${hr.distanceSurfaceFit} fit — confidence ${hr.confidence}/10` : `Confidence ${hr.confidence}/10`,
+              strengths: synthData.runnerAssessments.find(r => r.name === hr.name && String(r.postPosition) === String(hr.postPosition))?.strengths || hr.angles || 'Limited evidence',
+              concerns: synthData.runnerAssessments.find(r => r.name === hr.name && String(r.postPosition) === String(hr.postPosition))?.concerns || hr.concerns || 'Limited evidence',
+              verdict: synthData.runnerAssessments.find(r => r.name === hr.name && String(r.postPosition) === String(hr.postPosition))?.verdict || (hr.confidence == null ? 'PP evidence compared across the field' : hr.fitness ? `${hr.fitness} — ${hr.distanceSurfaceFit} fit — confidence ${hr.confidence}/10` : `Confidence ${hr.confidence}/10`),
               confidence: hr.confidence,
               research: hr.research,
               lastRaces: hr.lastRaces,
@@ -2520,6 +2520,7 @@ Return valid JSON only.`;
           setError(`Analysis failed: ${err.message}`);
         } finally {
           window.removeEventListener('claude-retry', retryHandler);
+          window.removeEventListener('claude-usage', usageHandler);
           setLoading(false);
           setProgress('');
         }
@@ -2553,10 +2554,13 @@ Trifecta: ${analysis.exotics.trifecta}`;
       // v7: Compute overlays from analysis + live odds
       // Returns { rows: [{post, name, aiProb, toteProb, toteOdds, ratio, tier, isUnder}], summary }
       const computeOverlays = (analysis, odds) => {
-        if (!analysis?.fieldProbabilities || !odds?.horses) return null;
+        if (!Array.isArray(analysis?.fieldProbabilities) || !Array.isArray(odds?.horses)) return null;
+        if (analysis.fieldProbabilities.some(h => typeof h.winProbability !== 'number' || !Number.isFinite(h.winProbability) || h.winProbability < 0 || h.winProbability > 1)) return null;
 
         // Build odds lookup by post position (normalize as string)
         const oddsByPost = {};
+        const ambiguousPosts = new Set();
+        odds.horses.forEach(h => { const key = String(h.postPosition); if (oddsByPost[key]) ambiguousPosts.add(key); oddsByPost[key] = h; });
         odds.horses.forEach(h => {
           if (h.postPosition !== null && h.postPosition !== undefined) {
             oddsByPost[String(h.postPosition)] = h;
@@ -2573,9 +2577,6 @@ Trifecta: ${analysis.exotics.trifecta}`;
             toteSum += ip;
           }
         });
-        // If we got a reasonable sum, normalize. Otherwise use raw.
-        const toteFactor = (toteSum > 1.05 && toteSum < 1.5) ? (1 / toteSum) : 1;
-
         // Normalize AI probs (in case they don't quite sum to 1)
         const aiSum = analysis.fieldProbabilities.reduce((s, h) => s + (h.winProbability || 0), 0);
         const aiFactor = aiSum > 0.01 ? (1 / aiSum) : 1;
@@ -2583,11 +2584,16 @@ Trifecta: ${analysis.exotics.trifecta}`;
         const rows = analysis.fieldProbabilities.map(h => {
           const post = String(h.postPosition);
           const aiProb = (h.winProbability || 0) * aiFactor;
-          const toteEntry = oddsByPost[post];
-          const rawTote = rawToteImplied[post];
-          const toteProb = rawTote != null ? rawTote * toteFactor : null;
+          const candidate = oddsByPost[post];
+          const candidateName = candidate?.name || candidate?.horseName;
+          const namesAgree = !candidateName || String(candidateName).trim().toLowerCase() === h.name.trim().toLowerCase();
+          const toteEntry = !ambiguousPosts.has(post) && namesAgree ? candidate : null;
+          const rawTote = toteEntry ? rawToteImplied[post] : null;
+          const toteProb = rawTote != null ? rawTote : null;
           const toteOdds = toteEntry?.liveOdds || null;
           const ratio = toteProb != null && toteProb > 0 ? aiProb / toteProb : null;
+          const expectedReturn = ratio != null ? ratio - 1 : null;
+          const fairOdds = aiProb > 0 ? 1 / aiProb - 1 : null;
           let tier = null;
           let isUnder = false;
           if (ratio != null) {
@@ -2599,14 +2605,14 @@ Trifecta: ${analysis.exotics.trifecta}`;
           return {
             postPosition: post,
             name: h.name,
-            aiProb, toteProb, toteOdds, ratio, tier, isUnder,
+            aiProb, toteProb, toteOdds, ratio, expectedReturn, fairOdds, tier, isUnder,
             poolPct: toteEntry?.poolPct,
             movement: toteEntry?.movement,
             missing: toteEntry == null || toteEntry.liveOdds == null
           };
         });
 
-        const overlays = rows.filter(r => r.tier && !r.isUnder).sort((a, b) => b.ratio - a.ratio);
+        const overlays = rows.filter(r => r.tier && !r.isUnder && !getOddsFreshness(odds)?.stale && analysis.assessment !== 'PASS').sort((a, b) => b.ratio - a.ratio);
         const underlays = rows.filter(r => r.isUnder).sort((a, b) => a.ratio - b.ratio);
         const missingOdds = rows.filter(r => r.missing).length;
 
@@ -2620,7 +2626,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
           overlays,
           underlays,
           missingOdds,
-          toteTakeoutEstimate: toteSum > 0 ? Math.round((toteSum - 1) * 100) : null,
+          toteTakeoutEstimate: toteSum >= 1 ? Math.round((toteSum - 1) * 100) : null,
           topPickPost: topPickPost ? String(topPickPost) : null,
           topPickIsUnder
         };
@@ -2706,7 +2712,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 </div>
               )}
               <div className="info-box">
-                <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>New in v7:</strong> Live tote integration. Screenshot your TwinSpires Advanced tab near post time and the app compares the crowd's implied probabilities to the AI's — highlighting overlays (bets with positive expected value) and underlays (horses the crowd loves but the AI doesn't). Data path is flexible: Brisnet file (best), program photos, or skip and use web search.
+                <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>Post Time v8:</strong> Load your past performances, check scratches, and compare the whole field. Standard uses Sonnet 5.5; Deep review uses Opus 5.5. Add a fresh tote screenshot to evaluate prices.
               </div>
               <section>
                 <h2 style={{ marginBottom: '1rem' }}>Pick a Race Day</h2>
@@ -2840,6 +2846,11 @@ Trifecta: ${analysis.exotics.trifecta}`;
               <p style={{ color: '#a8a29e', fontStyle: 'italic', marginTop: 0, marginBottom: '1rem', fontSize: '0.875rem' }}>{entries.conditions}</p>
               {entries.notes && (<div className="info-box" style={{ color: '#fde68a' }}>{entries.notes}</div>)}
 
+              <div className="info-box" role="status">
+                <strong>Race readiness</strong> · {horses.filter(h => !h.scratched && currentPP?.horses?.some(pp => pp.horseName?.trim().toLowerCase() === h.name.trim().toLowerCase())).length}/{horses.filter(h => !h.scratched).length} runners matched to PP data
+                <div>{currentOdds ? `Odds: ${getOddsFreshness(currentOdds).ageMin} minutes old` : 'Odds: not captured'} · {conditions ? 'Conditions available' : 'Conditions not checked'}</div>
+                <button className="primary-btn" style={{marginTop: '0.75rem'}} onClick={runAnalysis} disabled={loading || !apiKey.trim()}>{loading ? progress || 'Analyzing…' : `Analyze race · ${currentModel.priceNote}`}</button>
+              </div>
               <button
                 className="scan-btn"
                 onClick={() => openScanModal(selectedRace)}
@@ -2912,8 +2923,8 @@ Trifecta: ${analysis.exotics.trifecta}`;
 
               <section>
                 <div className="row-header">
-                  <h2>The Field ({horses.length})</h2>
-                  <span className="mono-font" style={{ fontSize: '10px', letterSpacing: '0.2em', color: '#78716c', textTransform: 'uppercase' }}>Edit before analyzing</span>
+                  <h2>The Field ({horses.filter(h => !h.scratched).length} active)</h2>
+                  <span style={{color: "#a8a29e", fontSize: "0.8rem"}}>Check scratches before analyzing</span>
                 </div>
                 {horses.map((h, idx) => {
                   const hasPPMatch = currentPP?.horses?.some(pph => pph.horseName?.toLowerCase().trim() === h.name.toLowerCase().trim());
@@ -2939,12 +2950,12 @@ Trifecta: ${analysis.exotics.trifecta}`;
                         {horses.length > 1 && !isScratched && <button className="x-btn" onClick={() => removeHorse(idx)}><IconX /></button>}
                       </div>
                       {!isScratched && (
-                        <div className="horse-details grid-4">
+                        <details><summary style={{cursor: "pointer", padding: "0.5rem 0"}}>Edit runner details</summary><div className="horse-details grid-4">
                           <input placeholder="Post #" value={h.postPosition} onChange={e => updateHorse(idx, 'postPosition', e.target.value)} />
                           <input placeholder="Jockey" value={h.jockey} onChange={e => updateHorse(idx, 'jockey', e.target.value)} />
                           <input placeholder="Trainer" value={h.trainer} onChange={e => updateHorse(idx, 'trainer', e.target.value)} />
                           <input placeholder="ML odds" value={h.morningLine} onChange={e => updateHorse(idx, 'morningLine', e.target.value)} />
-                        </div>
+                        </div></details>
                       )}
                       {isScratched && (
                         <div style={{ textDecoration: 'none', fontStyle: 'italic', color: '#fb7185', fontSize: '0.8rem', padding: '0.25rem 0' }}>
@@ -2984,18 +2995,18 @@ Trifecta: ${analysis.exotics.trifecta}`;
               </section>
 
               <section>
-                <label style={{ marginBottom: '0.5rem' }}>Choose Analysis Model</label>
+                <label style={{ marginBottom: '0.5rem' }}>Analysis depth</label>
                 <div className="model-picker">
-                  {Object.entries(MODELS).map(([key, m]) => (
+                  {Object.entries(MODELS).filter(([key]) => key !== 'haiku').map(([key, m]) => (
                     <button key={key} className={`model-btn ${selectedModel === key ? 'active' : ''}`} onClick={() => setSelectedModel(key)} disabled={loading}>
-                      <span className="name">{m.name}</span><span className="price">{m.priceNote}</span>
+                      <span className="name">{m.priceNote}</span><span className="price">{m.name}</span>
                     </button>
                   ))}
                 </div>
                 <p style={{ color: '#78716c', fontSize: '0.8rem', fontStyle: 'italic', margin: '0.5rem 0 0' }}>
                   {currentPP
-                    ? `Research: Haiku (fast, cheap). Synthesis: ${selectedModel === 'haiku' ? 'Sonnet' : currentModel.name} (picks + probabilities). PP data used directly.`
-                    : `All calls use ${currentModel.name}. Web search for horse research (slower, costlier).`
+                    ? `Matched PP data goes directly to ${currentModel.name} for whole-field comparison. Missing runners require web research.`
+                    : `Sonnet researches missing PP evidence; ${currentModel.name} compares the field. Web research takes longer.`
                   }
                 </p>
               </section>
@@ -3006,6 +3017,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 const saved = loadAnalysisData(selectedTrack.slug, selectedDate, selectedRace.raceNumber);
                 if (!saved) return null;
                 const age = formatAge(saved.timestamp);
+                const fieldChanged = JSON.stringify(saved.horses || []) !== JSON.stringify(horses);
                 const analysisDate = saved.timestamp.slice(0, 10);
                 const isDifferentDay = analysisDate !== selectedDate;
                 const isOld = isDifferentDay || (Date.now() - new Date(saved.timestamp).getTime() > 3 * 60 * 60 * 1000);
@@ -3018,7 +3030,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                     flexWrap: 'wrap'
                   }}>
                     <div style={{ fontSize: '0.85rem', color: isOld ? '#fcd34d' : '#c4b5fd', flex: '1 1 auto' }}>
-                      <strong style={{ fontStyle: 'normal' }}>Saved analysis from {age}</strong>
+                      <strong style={{ fontStyle: 'normal' }}>{fieldChanged ? "Field changed — run a fresh analysis" : `Saved analysis from ${age}`}</strong>
                       {isDifferentDay && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic', opacity: 0.8 }}>· from a prior day</span>}
                       {!isDifferentDay && isOld && <span style={{ marginLeft: '0.5rem', fontStyle: 'italic', opacity: 0.8 }}>· may be stale</span>}
                     </div>
@@ -3026,11 +3038,13 @@ Trifecta: ${analysis.exotics.trifecta}`;
                       <button
                         className="ghost-btn"
                         onClick={() => {
+                          if (fieldChanged) return;
                           setAnalysis(saved.analysis);
                           if (saved.conditions) setConditions(saved.conditions);
                           setAnalysisTimestamp(saved.timestamp);
                           setView('analysis');
                         }}
+                        disabled={fieldChanged || loading}
                         style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.4)' }}
                       >
                         <IconEye /> View
@@ -3049,7 +3063,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
 
               <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
                 <button className="primary-btn" onClick={runAnalysis} disabled={loading}>
-                  {loading ? (<><div className="spinner"></div><span>Deep dive ({progressSteps.filter(s => s.status === 'done').length}/{progressSteps.length})</span></>) : (<><IconSparkle /> Deep Dive ({currentModel.name})</>)}
+                  {loading ? (<><div className="spinner"></div><span>Deep dive ({progressSteps.filter(s => s.status === 'done').length}/{progressSteps.length})</span></>) : (<><IconSparkle /> Analyze race · {currentModel.priceNote}</>)}
                 </button>
                 {loading && progressSteps.length > 0 && (
                   <div className="progress-detail">
@@ -3077,6 +3091,14 @@ Trifecta: ${analysis.exotics.trifecta}`;
                 </div>
               </div>
 
+              <div className="info-box">
+                <strong>{analysis.assessment || 'Review prices'}</strong>
+                <p>{analysis.summary}</p>
+                {analysis.uncertainty && <p><strong>Uncertainty:</strong> {analysis.uncertainty}</p>}
+                {analysis.alternativePace && <p><strong>Alternative pace:</strong> {analysis.alternativePace}</p>}
+                <small>{analysis.modelId || 'Earlier model'}{analysis.usage ? ` · ${analysis.usage.input_tokens.toLocaleString()} input / ${analysis.usage.output_tokens.toLocaleString()} output tokens` : ''} · Probabilities are estimates, not measured win rates.</small>
+                <button className="ghost-btn" onClick={() => openToteModal(selectedRace)} style={{marginTop: '0.75rem'}}>Refresh odds only</button>
+              </div>
               {/* v7.1: Analysis age + Re-run */}
               {analysisTimestamp && (() => {
                 const age = formatAge(analysisTimestamp);
@@ -3148,7 +3170,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                         <div className="overlay-title"><span className="icon-box"><IconTarget /></span> Value Analysis</div>
                       </div>
                       <div style={{ color: '#a8a29e', fontSize: '0.875rem', fontStyle: 'italic', marginBottom: '0.75rem' }}>
-                        Capture live tote odds to see overlay detection. Horses where the AI's probability exceeds the crowd's implied probability are bettable overlays.
+                        Capture tote odds to compare estimated probabilities with the payout’s break-even probability.
                       </div>
                       <button className="tote-action" style={{ color: '#c4b5fd', borderColor: 'rgba(168, 85, 247, 0.4)' }} onClick={() => openToteModal(selectedRace)}>
                         + Capture Tote Screenshot
@@ -3174,17 +3196,18 @@ Trifecta: ${analysis.exotics.trifecta}`;
                       <div className="overlay-title"><span className="icon-box"><IconTarget /></span> Overlay Detection</div>
                     </div>
                     <div className="overlay-subtitle">
-                      Horses where AI probability ≥ 1.25× tote implied probability. Based on live odds {fresh.ageMin === 0 ? 'just captured' : `${fresh.ageMin} min ago`}{fresh.veryStale ? ' — ⚠ very stale' : fresh.stale ? ' — ⚠ getting stale' : ''}.
+                      Estimated return of at least 25% at the displayed payout, before uncertainty. Model estimates are unvalidated. Based on odds {fresh.ageMin === 0 ? 'just captured' : `${fresh.ageMin} min ago`}{fresh.veryStale ? ' — ⚠ very stale' : fresh.stale ? ' — ⚠ getting stale' : ''}.
                     </div>
 
+                    {(fresh.stale || analysis.assessment === 'PASS') && <div className="overlay-empty">{fresh.stale ? 'Refresh odds before evaluating a price opportunity.' : 'Analysis recommends passing; price opportunities are suppressed.'}</div>}
                     {overlay.topPickIsUnder && (
                       <div style={{ color: '#fb7185', fontSize: '0.85rem', fontStyle: 'italic', marginBottom: '0.75rem', paddingLeft: '0.5rem', borderLeft: '2px solid #fb7185' }}>
-                        ⚠ The AI's win pick is an underlay — market disagrees with the analysis. Proceed with caution.
+                        The top-ranked horse does not meet the model’s price requirement at these odds.
                       </div>
                     )}
 
                     {overlay.overlays.length === 0 && overlay.underlays.length === 0 && (
-                      <div className="overlay-empty">No meaningful overlays or underlays detected. AI and market roughly agree.</div>
+                      <div className="overlay-empty">No large price differences detected. Passing is a valid decision.</div>
                     )}
 
                     {overlay.overlays.length > 0 && (
@@ -3198,8 +3221,8 @@ Trifecta: ${analysis.exotics.trifecta}`;
                               <div className="post">{row.postPosition}</div>
                               <div className="name">{row.name}</div>
                               <div className="odds">{row.toteOdds}</div>
-                              <div className="prob">AI {(row.aiProb * 100).toFixed(0)}% / Tote {(row.toteProb * 100).toFixed(0)}%</div>
-                              <div className="tag">{row.ratio.toFixed(2)}×</div>
+                              <div className="prob">Estimate {(row.aiProb * 100).toFixed(0)}% / Break-even {(row.toteProb * 100).toFixed(0)}%</div>
+                              <div className="tag">{row.expectedReturn >= 0 ? "+" : ""}{(row.expectedReturn * 100).toFixed(0)}% est.</div>
                             </div>
                           ))}
                         </div>
@@ -3217,8 +3240,8 @@ Trifecta: ${analysis.exotics.trifecta}`;
                               <div className="post">{row.postPosition}</div>
                               <div className="name">{row.name}</div>
                               <div className="odds">{row.toteOdds}</div>
-                              <div className="prob">AI {(row.aiProb * 100).toFixed(0)}% / Tote {(row.toteProb * 100).toFixed(0)}%</div>
-                              <div className="tag">{row.ratio.toFixed(2)}×</div>
+                              <div className="prob">Estimate {(row.aiProb * 100).toFixed(0)}% / Break-even {(row.toteProb * 100).toFixed(0)}%</div>
+                              <div className="tag">{row.expectedReturn >= 0 ? "+" : ""}{(row.expectedReturn * 100).toFixed(0)}% est.</div>
                             </div>
                           ))}
                         </div>
@@ -3228,7 +3251,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
                     <div className="overlay-summary">
                       <span><strong>{overlay.overlays.length}</strong> overlays</span>
                       <span><strong>{overlay.underlays.length}</strong> underlays</span>
-                      {overlay.toteTakeoutEstimate != null && <span>Est. takeout: <strong>{overlay.toteTakeoutEstimate}%</strong></span>}
+                      {overlay.toteTakeoutEstimate != null && <span>Market overround: <strong>{overlay.toteTakeoutEstimate}%</strong></span>}
                       {overlay.missingOdds > 0 && <span style={{ color: '#fb7185' }}>⚠ {overlay.missingOdds} horses missing odds</span>}
                       <button className="tote-action" style={{ marginLeft: 'auto', color: '#c4b5fd' }} onClick={() => openToteModal(selectedRace)}>Refresh Odds</button>
                     </div>
@@ -3294,17 +3317,17 @@ Trifecta: ${analysis.exotics.trifecta}`;
 
               <section>
                 <h3>Horse-by-Horse</h3>
-                {[...analysis.horses].sort((a, b) => b.confidence - a.confidence).map((horse, idx) => (
+                {[...(analysis.horses || [])].sort((a, b) => b.confidence - a.confidence).map((horse, idx) => (
                   <div key={idx} className="horse-result">
                     <div className="horse-result-header">
                       <div className="horse-result-name"><span className="post">{horse.postPosition}.</span> {horse.name}</div>
                       <div className="horse-result-meta">
                         <span className="running-style">{horse.runningStyle}</span>
                         {horse.tripNote && <span className="trip-flag">⚑ Trip angle</span>}
-                        <span className="confidence" style={{ color: confidenceColor(horse.confidence) }}>{horse.confidence}<span className="denom">/10</span></span>
+                        {horse.confidence != null && <span className="confidence" style={{ color: confidenceColor(horse.confidence) }}>{horse.confidence}<span className="denom">/10</span></span>}
                       </div>
                     </div>
-                    <div className="confidence-bar"><div className="confidence-fill" style={{ width: `${(horse.confidence / 10) * 100}%` }}></div></div>
+                    {horse.confidence != null && <div className="confidence-bar"><div className="confidence-fill" style={{ width: `${(horse.confidence / 10) * 100}%` }}></div></div>}
                     <div className="horse-detail-grid">
                       <div><div className="detail-label">Key Stats</div><p className="detail-text">{horse.keyStats}</p></div>
                       <div><div className="detail-label strength">Strengths</div><p className="detail-text">{horse.strengths}</p></div>

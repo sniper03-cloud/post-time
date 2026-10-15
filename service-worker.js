@@ -1,4 +1,4 @@
-const CACHE_NAME = 'post-time-v7-3-1';
+const CACHE_NAME = 'post-time-v8-0';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {}));
@@ -6,7 +6,7 @@ self.addEventListener('install', (event) => {
 });
 self.addEventListener('activate', (event) => {
   event.waitUntil(caches.keys().then((keys) =>
-    Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    Promise.all(keys.filter((k) => k.startsWith('post-time-') && k !== CACHE_NAME).map((k) => caches.delete(k)))
   ));
   self.clients.claim();
 });
@@ -16,6 +16,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate' || event.request.destination === 'document') {
     event.respondWith(
       fetch(event.request).then((res) => {
+        if (!res.ok) throw new Error('Navigation unavailable');
         const clone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return res;
@@ -26,6 +27,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request).then((res) => {
       if (res && res.status === 200 && res.type === 'basic') {
+        if (!res.ok) throw new Error('Navigation unavailable');
         const clone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
       }

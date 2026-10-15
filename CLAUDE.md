@@ -1,3 +1,22 @@
+# Current release: v8 (October 15, 2026)
+
+This section supersedes the historical v7 notes below.
+
+- Standard analysis: `claude-sonnet-5-5`; Deep review: `claude-opus-5-5`.
+- Extraction: `claude-haiku-5-5`; screenshot extraction and missing-PP web research: Sonnet 5.5.
+- Model IDs checked against https://platform.claude.com/docs/en/models/overview. Account-specific access and live paid responses still need verification with the user's API key. No silent fallback.
+- Matched PP data is supplied directly to one whole-field synthesis. Missing runners use web research. No separate AI summarization call for runners with PP evidence.
+- Synthesis uses a JSON schema plus runtime runner/probability validation; runner assessments include strengths, concerns and verdicts. Alternative pace, uncertainty and PASS are explicit.
+- Research resumes only when field, PP, conditions, model and version match. Editing the field disables opening the old saved analysis from entries.
+- Value uses offered payout break-even probability, not market-normalized probability. Estimated return = p * (fractionalOdds + 1) - 1. Estimates are not calibrated measurements. Stale odds and PASS suppress highlighted opportunities. Ambiguous/mismatched tote runners are excluded.
+- Usage records input/output tokens for the current analysis requests; it is not a complete invoice (tool charges, cached usage and previous resumed work are not costed).
+- Readiness summary, compact editable runner details, Standard/Deep review selector, results summary and refresh-odds-only action.
+- Service-worker cache `post-time-v8-0`; cache cleanup scoped to this application.
+
+Validation: `node tests/analysis.test.cjs`; JSX compiled with Babel 7.28.5; browser workflow exercised with a synthetic race and mocked API. No real PP fixture was supplied, so the existing Brisnet parser was not changed. Analysis quality, model access, and predictive returns have not been established by these tests. Coupled entries are not aggregated into a single betting interest; ambiguous mappings are withheld.
+
+---
+
 # Post Time — AI Handicapper
 
 A PWA for AI-assisted thoroughbred horse racing handicapping. Currently at v7.1.
