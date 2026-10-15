@@ -1,3 +1,7 @@
+# Local patch v8.0.2 — structured-output compatibility
+
+For manual upload: index.html and service-worker.js. Removed unsupported minimum/maximum keywords from the API JSON schema; local validateAnalysis still rejects probabilities outside [0, 1]. Regression tests cover schema bounds and local range enforcement. Visible version and cache bumped to v8.0.2. No live paid API call performed.
+
 # Local patch v8.0.1 — API-key recovery
 
 Not deployed automatically; user requested manual GitHub upload. Upload index.html and service-worker.js together. API key settings is available on every screen; typing uses a separate draft, Save commits the key, Remove deletes only the credential. HTTP 401 opens the key editor and stops further sequential horse research. Tested typing/save/reopen/remove in a local browser with a placeholder, plus JSX compilation and existing analysis tests.

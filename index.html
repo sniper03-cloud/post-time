@@ -314,7 +314,7 @@
       }),
       paceScenario: textSchema, trackBias: textSchema, tripAngles: textSchema,
       runnerAssessments: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, strengths: textSchema, concerns: textSchema, verdict: textSchema }) },
-      fieldProbabilities: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, winProbability: { type: 'number', minimum: 0, maximum: 1 } }) },
+      fieldProbabilities: { type: 'array', items: objectSchema({ postPosition: textSchema, name: textSchema, winProbability: { type: 'number' } }) },
       topPicks: objectSchema({ win: pickSchema, place: pickSchema, show: pickSchema, longshot: pickSchema }),
       exotics: objectSchema({ exacta: textSchema, trifecta: textSchema, superfecta: textSchema, notes: textSchema }),
       assessment: { type: 'string', enum: ['PASS', 'REVIEW PRICES'] },
@@ -2750,7 +2750,7 @@ Trifecta: ${analysis.exotics.trifecta}`;
           {view === 'home' && (
             <>
               <div className="info-box">
-                <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>Post Time v8:</strong> Load your past performances, check scratches, and compare the whole field. Standard uses Sonnet 5.5; Deep review uses Opus 5.5. Add a fresh tote screenshot to evaluate prices.
+                <strong style={{ color: '#c4b5fd', fontStyle: 'normal' }}>Post Time v8.0.2:</strong> Load your past performances, check scratches, and compare the whole field. Standard uses Sonnet 5.5; Deep review uses Opus 5.5. Add a fresh tote screenshot to evaluate prices.
               </div>
               <section>
                 <h2 style={{ marginBottom: '1rem' }}>Pick a Race Day</h2>
