@@ -2321,7 +2321,7 @@ LIVE TRACK CONDITIONS:
                 return {
                   postPosition: h.postPosition, name: h.name,
                   runningStyle: ppHorse.brisRunStyle || 'Unknown',
-                  speedFigures: recent.map(pp => `${pp.date || 'Date unknown'}: BRIS ${pp.beyerFig ?? '?'}`).join('; '),
+                  speedFigures: recent.map(pp => `${pp.date || 'Date unknown'}: ${currentPP.source === 'brisnet' ? 'BRIS' : 'Speed figure (verify source)'} ${pp.beyerFig ?? '?'}`).join('; '),
                   bestFig: null, lastRaces: recent.map(pp => `${pp.date || '?'} ${pp.track || pp.trackCode || ''}: finish ${pp.finishPosition ?? '?'}`).join('; '),
                   angles: 'Evaluate full PP evidence in field context',
                   concerns: 'See comparative assessment; extracted data may contain errors',
